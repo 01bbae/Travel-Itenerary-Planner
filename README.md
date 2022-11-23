@@ -9,4 +9,7 @@ References:
 - https://youtu.be/9e-5QHpadi0
 - https://youtu.be/s4n_x5B58Dw
 - https://www.youtube.com/watch?v=iP3DnhCUIsE
+  - Google Maps Autocomplete/route/marker implementation
 - https://www.npmjs.com/package/@react-google-maps/api
+- https://www.youtube.com/watch?v=Y-XW9m8qOis
+  - Login page
