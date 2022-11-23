@@ -1,7 +1,5 @@
 # Travel-Itenerary-Planner
 
-
-
 References:
 
 - https://www.w3schools.com/nodejs/nodejs_mysql.asp
@@ -10,3 +8,5 @@ References:
 - https://github.com/sidorares/node-mysql2#history-and-why-mysql2
 - https://youtu.be/9e-5QHpadi0
 - https://youtu.be/s4n_x5B58Dw
+- https://www.youtube.com/watch?v=iP3DnhCUIsE
+- https://www.npmjs.com/package/@react-google-maps/api

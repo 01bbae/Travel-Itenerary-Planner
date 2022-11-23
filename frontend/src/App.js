@@ -7,7 +7,7 @@ function App() {
   return (
     <div>
       <Header/>
-      <Input />
+      {/* <Input /> */}
       <Map />
     </div>
   );

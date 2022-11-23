@@ -86,7 +86,14 @@ const Map = () => {
     destiantionRef.current.value = ''
   }
 
-  return (
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+    libraries: ['places']
+  })
+
+  return isLoaded ? (
+    
     <Flex
       position='relative'
       flexDirection='column'
@@ -97,13 +104,24 @@ const Map = () => {
       <Box position='absolute' left={0} top={0} h='100%' w='100%'>
           
 
-        <GoogleMapProvider
-          googleMapsAPIKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
-          options={mapOptions}
-          mapContainer={mapContainer}
+      <GoogleMap
+          center={center}
+          zoom={15}
+          mapContainerStyle={{ width: '100%', height: '100%' }}
+          options={{
+            zoomControl: false,
+            streetViewControl: false,
+            mapTypeControl: false,
+            fullscreenControl: false,
+          }}
+          onLoad={map => setMap(map)}
         >
-        <div ref={(node) => setMapContainer(node)} style={{ height: "100vh" }} />
-        </GoogleMapProvider>
+          <Marker position={center} />
+          {directionsResponse && (
+            <DirectionsRenderer directions={directionsResponse} />
+          )}
+        </GoogleMap>
+        
       </Box>
 
       <Box
@@ -117,18 +135,18 @@ const Map = () => {
       >
         <HStack spacing={2} justifyContent='space-between'>
           <Box flexGrow={1}>
-            {/* <Autocomplete> */}
+            <Autocomplete>
               <Input type='text' placeholder='Origin' ref={originRef} />
-            {/* </Autocomplete> */}
+            </Autocomplete>
           </Box>
           <Box flexGrow={1}>
-            {/* <Autocomplete> */}
+            <Autocomplete>
               <Input
                 type='text'
                 placeholder='Destination'
                 ref={destiantionRef}
               />
-            {/* </Autocomplete> */}
+            </Autocomplete>
           </Box>
 
           <ButtonGroup>
@@ -157,7 +175,7 @@ const Map = () => {
         </HStack>
       </Box>
     </Flex>
-  );
+  ) : <></>
 };
 
 export default Map;
