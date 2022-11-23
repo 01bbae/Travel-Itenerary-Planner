@@ -1,7 +1,9 @@
-
+const dotenv = require("dotenv");
+dotenv.config(); 
 const mysql = require('mysql2');
-const secret = require('./secret.json');
 const express = require('express')
+
+const app = express()
 
 app.get("/",(req,res) => {
   res.json({/* some json here */})
@@ -12,7 +14,7 @@ app.get("/",(req,res) => {
 var con = mysql.createConnection({
     host: "localhost",
     user: "root",
-    password: secret.mysql_password
+    password: process.env.MYSQL_PASSWORD
   });
   
   con.connect((err) => {

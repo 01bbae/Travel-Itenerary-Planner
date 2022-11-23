@@ -5,7 +5,7 @@ import Map from "./Map";
 function App() {
   return (
     <div>
-      <Input />
+      {/* <Input /> */}
       <Map />
     </div>
   );

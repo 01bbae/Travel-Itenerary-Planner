@@ -1,0 +1,27 @@
+.pageWrapper{
+    background-color: grey;
+}
+
+input{
+    width:90%;
+    padding: ;
+    height: 
+}
+
+.inputWrapper{
+    background-color: white;
+    opacity: 95%;
+    padding: 2%;
+    width: 20%;
+    height: 50%;
+    top: 10%;
+    left: 5%;
+    z-index:2;
+    position:absolute;
+}
+
+.mapWrapper{
+    position: relative;
+    z-index:1;
+}
+

@@ -4,10 +4,12 @@ import {
   GoogleMapProvider,
   userGoogleMap,
 } from "@ubilabs/google-maps-react-hooks";
+import './Map.css';
 // import { GoogleMap, userLoadScript, Marker, useLoadScript } from '@react-google-maps/api'
 
 const Map = () => {
   const [mapContainer, setMapContainer] = useState(null);
+  const [Input, setInput] = useState(null);
 
   const mapOptions = {
     zoom: 15,
@@ -41,13 +43,26 @@ const Map = () => {
   // }
 
   return (
-    <GoogleMapProvider
-      googleMapsAPIKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
-      options={mapOptions}
-      mapContainer={mapContainer}
-    >
-      <div ref={(node) => setMapContainer(node)} style={{ height: "100vh" }} />
-    </GoogleMapProvider>
+    <div className="pageWrapper">
+      <div className="inputWrapper">
+        <input placeholder="Test" onSubmit={(text) => setInput(text)}></input>
+        <div>
+          text placeholder
+        </div>
+      </div>
+      <div className="mapWrapper">
+        <GoogleMapProvider
+          googleMapsAPIKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
+          options={mapOptions}
+          mapContainer={mapContainer}
+        >
+          <div
+            ref={(node) => setMapContainer(node)}
+            style={{ height: "100vh" }}
+          />
+        </GoogleMapProvider>
+      </div>
+    </div>
   );
 };
 
