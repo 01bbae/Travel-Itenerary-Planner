@@ -4,12 +4,32 @@ import {
   GoogleMapProvider,
   userGoogleMap,
 } from "@ubilabs/google-maps-react-hooks";
-import './Map.css';
-// import { GoogleMap, userLoadScript, Marker, useLoadScript } from '@react-google-maps/api'
+import "./Map.css";
+import Routes from "./Routes";
+let yelp = require("./response.json");
 
 const Map = () => {
   const [mapContainer, setMapContainer] = useState(null);
   const [Input, setInput] = useState(null);
+  const [Results, setResults] = useState({});
+
+  const PredefinedLocations = yelp.businesses;
+  // console.log(PredefinedLocations);
+  const location = [];
+  PredefinedLocations.forEach(elem => {
+    location.push(<option value={elem.alias}>{elem.name}</option>)
+  })
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const res = await fetch("/query");
+      const newData = await res.json();
+      setResults(newData);
+      console.log(newData);
+    };
+
+    fetchData();
+  }, [Input]);
 
   const mapOptions = {
     zoom: 15,
@@ -18,39 +38,19 @@ const Map = () => {
       lng: -117.85,
     },
   };
-  // function initMap() {
-  //   var directionsService = new google.maps.DirectionsService();
-  //   var directionsRenderer = new google.maps.DirectionsRenderer();
-  //   var chicago = new google.maps.LatLng(41.850033, -87.6500523);
-  //   var mapOptions = {
-  //     zoom:7,
-  //     center: chicago
-  //   }
-  //   var map = new google.maps.Map(document.getElementById('map'), mapOptions);
-  //   directionsRenderer.setMap(map);
-  // }
-
-  // const { isLoaded } = useLoadScript({
-  //   googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY
-  // });
-
-  // if(!isLoaded) {
-  //     return <div> Loading... </div>
-  // }
-
-  // function Map(){
-  //   return <GoogleMap zoom={10} center={{lat:44, lng: -80}} mapContainerClassName = "map-container"></GoogleMap>
-  // }
 
   return (
-    <div className="pageWrapper">
-      <div className="inputWrapper">
-        <input placeholder="Test" onSubmit={(text) => setInput(text)}></input>
-        <div>
-          text placeholder
-        </div>
+    <div className="pagewrapper">
+      <div className="overlay">
+        <form className="inputwrapper">
+          <select>
+            {location}
+          </select>
+          <input className="inputsubmit" type="submit" value="go!"></input>
+        </form>
+        {Object.keys(Results).length > 0 && <Routes />}
       </div>
-      <div className="mapWrapper">
+      <div className="mapwrapper">
         <GoogleMapProvider
           googleMapsAPIKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
           options={mapOptions}
