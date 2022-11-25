@@ -16,6 +16,7 @@ import {
   Text,
 } from '@chakra-ui/react'
 import { GoogleMap, userLoadScript, Marker, useLoadScript, Autocomplete, DirectionsRenderer, useJsApiLoader, Polyline } from '@react-google-maps/api'
+import "./map.css"
 
 // Initialize center
 const center = { lat: 33.79, lng: -117.85, }
@@ -174,51 +175,41 @@ const Map = () => {
 
   return isLoaded ? (
     
-    <Flex
-      position='relative'
-      flexDirection='column'
-      alignItems='center'
-      h = '100vh'
-      w = '100vw'
-    >
-      <Box position='absolute' left={0} top={0} h='100%' w='100%'>
-          
-
-      <GoogleMap
-          center={center}
-          zoom={15}
-          mapContainerStyle={{ width: '100%', height: '100%' }}
-          options={{
-            zoomControl: false,
-            streetViewControl: false,
-            mapTypeControl: false,
-            fullscreenControl: false,
-          }}
-          onLoad={map => setMap(map)}
-        >
-          <Marker position={center} />
-          {directionsResponse && (
-            <DirectionsRenderer directions={directionsResponse} />
-          )}
+    <Flex className="flexBox">
+      <Box className="mapBox">
+      
+        {/* Loading map onto page */}
+        <GoogleMap
+            center={center}
+            zoom={15}
+            mapContainerStyle={{ width: '100%', height: '100%' }}
+            options={{
+              zoomControl: false,
+              streetViewControl: false,
+              mapTypeControl: false,
+              fullscreenControl: false,
+            }}
+            onLoad={map => setMap(map)}
+          >
+            <Marker position={center} />
+            {directionsResponse && (
+              <DirectionsRenderer directions={directionsResponse} />
+            )}
         </GoogleMap>
         
       </Box>
 
-      <Box
-        p={4}
-        borderRadius='lg'
-        m={4}
-        bgColor='white'
-        shadow='base'
-        minW='container.md'
-        zIndex='1'
-      >
-        <HStack spacing={2} justifyContent='space-between'>
+      <Box className="inputBox">
+        <HStack>
+          
+          {/* Input for origin */}
           <Box flexGrow={1}>
             <Autocomplete>
               <Input type='text' placeholder='Origin' ref={originRef} />
             </Autocomplete>
           </Box>
+
+          {/* Input for Destination */}
           <Box flexGrow={1}>
             <Autocomplete>
               <Input
@@ -228,24 +219,26 @@ const Map = () => {
               />
             </Autocomplete>
           </Box>
-
+          
+          {/* Button for calculate */}
           <ButtonGroup>
             <Button colorScheme='pink' type='submit' onClick={calculateRoute}>
               Calculate Route
             </Button>
             <IconButton
-              aria-label='center back'
-              // icon={<FaTimes />}
+              aria-label='center back' title="close"
               onClick={clearRoute}
             />
           </ButtonGroup>
+        
         </HStack>
-        <HStack spacing={4} mt={4} justifyContent='space-between'>
+        
+        {/* Displaying output (Distance and Duration) */}
+        <HStack className="outputBox">
           <Text>Distance: {distance} </Text>
           <Text>Duration: {duration} </Text>
           <IconButton
             aria-label='center back'
-            // icon={<FaLocationArrow />}
             isRound
             onClick={() => {
               map.panTo(center)
