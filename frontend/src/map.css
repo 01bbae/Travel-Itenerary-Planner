@@ -15,7 +15,12 @@
 }
 
 .inputBox {
-    padding: 4;
+    position: absolute;
+    padding: 2rem;
+    left: 2rem;
+    top: 2rem;
+    height: 70vh;
+    opacity: 90%;
     border-radius: lg;
     margin: 4;
     background-color: white;
@@ -27,4 +32,8 @@
     padding: 4;
     margin-top: 4;
     justify-content: space-between;
+}
+
+.form{
+    opacity: 100%;
 }
