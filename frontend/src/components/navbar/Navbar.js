@@ -5,13 +5,13 @@ import "./Navbar.css";
 export default function Navbar() {
   return (
     <div className="navbar">
-      <NavLink className="navbar-item" to='/'>
+      <NavLink className="navbar-item" to="/">
         Home
       </NavLink>
-      <NavLink className="navbar-item" to='/saved'>
+      <NavLink className="navbar-item" to="/saved">
         Routes Saved
       </NavLink>
-      <NavLink className="navbar-item" to='/login'>
+      <NavLink className="navbar-item" to="/login">
         Login
       </NavLink>
     </div>
