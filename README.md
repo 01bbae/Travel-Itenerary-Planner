@@ -1,4 +1,4 @@
-# Travel-Itenerary-Planner
+# Travel-Itinerary-Planner
 
 References:
 
