@@ -1,7 +1,7 @@
 .auth-form-container {
     text-align: center;
     display: flex;
-    min-height: 100vh;
+    height: 70vh;
     align-items: center;
     justify-content: center;
     color: white;
