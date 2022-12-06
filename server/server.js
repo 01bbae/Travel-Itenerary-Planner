@@ -98,6 +98,21 @@ const createTables = () => {
 // };
 createTables();
 
+// YelpData.businesses.forEach((element, index) => {
+//   con.query(`
+//   delimiter $$
+//   CREATE Procedure addUserAndMap()
+//   BEGIN
+//     INSERT INTO user (user_username, user_password)
+//     VALUES (${element.name}, ${element.location.address1});
+//     SELECT @lastID := LAST_INSERT_ID();
+//     INSERT INTO map (user_id)
+//     VALUES (@lastID);
+//   END$$
+//   delimiter ;
+//   `);
+// });
+
 con.end((err) => {
   if (err) throw err;
   console.log("Disconnected!");
