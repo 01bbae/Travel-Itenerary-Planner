@@ -26,6 +26,7 @@ import {
   Polyline,
 } from "@react-google-maps/api";
 import "./Map.css";
+import "../../response.json";
 
 // Initialize center
 const center = { lat: 33.79, lng: -117.85 };
@@ -48,29 +49,8 @@ const Map = () => {
       lng: -117.85,
     },
   };
-  // function initMap() {
-  //   var directionsService = new google.maps.DirectionsService();
-  //   var directionsRenderer = new google.maps.DirectionsRenderer();
-  //   var chicago = new google.maps.LatLng(41.850033, -87.6500523);
-  //   var mapOptions = {
-  //     zoom:7,
-  //     center: chicago
-  //   }
-  //   var map = new google.maps.Map(document.getElementById('map'), mapOptions);
-  //   directionsRenderer.setMap(map);
-  // }
 
-  // const { isLoaded } = useLoadScript({
-  //   googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY
-  // });
-
-  // if(!isLoaded) {
-  //     return <div> Loading... </div>
-  // }
-
-  // function Map(){
-  //   return <GoogleMap zoom={10} center={{lat:44, lng: -80}} mapContainerClassName = "map-container"></GoogleMap>
-  // }
+  const createDropdown = () => {};
 
   async function calculateRoute() {
     if (originRef.current.value === "" || destiantionRef.current.value === "") {
@@ -82,12 +62,12 @@ const Map = () => {
       origin: originRef.current.value,
       destination: destiantionRef.current.value,
       // eslint-disable-next-line no-undef
-      travelMode: google.maps.TravelMode.DRIVING,
+      travelMode: google.maps.TravelMode.TRANSIT,
       // waypoints: [{ stopover: true, location: { placeId: "ChIJRVj1dgPP20YRBWB4A_sUx_Q" } }],
       provideRouteAlternatives: true,
     });
 
-    // setDirectionsResponse(results)
+    setDirectionsResponse(results);
     setDistance(results.routes[0].legs[0].distance.text);
     setDuration(results.routes[0].legs[0].duration.text);
     // console.log("Route 0: ");
@@ -130,9 +110,9 @@ const Map = () => {
       travelMode: google.maps.TravelMode.DRIVING,
       // waypoints: [{ stopover: true, location: { placeId: "ChIJRVj1dgPP20YRBWB4A_sUx_Q" } }],
       provideRouteAlternatives: true,
-      waypoints: wayPoints,
+      // waypoints: wayPoints,
     });
-    setDirectionsResponse(results2);
+    // setDirectionsResponse(results2);
     console.log(results2);
   }
   function clearRoute() {
@@ -213,20 +193,20 @@ const Map = () => {
         <HStack className="form">
           {/* Input for origin */}
           <Box flexGrow={1}>
-            <Autocomplete>
+            {/* <Autocomplete>
               <Input type="text" placeholder="Origin" ref={originRef} />
-            </Autocomplete>
+            </Autocomplete> */}
           </Box>
 
           {/* Input for Destination */}
           <Box flexGrow={1}>
-            <Autocomplete>
+            {/* <Autocomplete>
               <Input
                 type="text"
                 placeholder="Destination"
                 ref={destiantionRef}
               />
-            </Autocomplete>
+            </Autocomplete> */}
           </Box>
 
           {/* Button for calculate */}

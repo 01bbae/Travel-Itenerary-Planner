@@ -12,11 +12,11 @@ app.get("/query", (req, res) => {
     "01": "United States",
     "02": "United Kingdom",
     "03": "Aruba",
-    "04": "United Kingdom"
+    "04": "United Kingdom",
   });
 });
 
-app.listen(5000, () => {
+app.listen(5001, () => {
   console.log("Server started on port 5000");
 });
 
@@ -24,7 +24,7 @@ var con = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: process.env.MYSQL_PASSWORD,
-  database: "travel"
+  database: "travel",
 });
 
 con.connect((err) => {
@@ -51,36 +51,52 @@ const createTables = () => {
     user_username VARCHAR(20) UNIQUE NOT NULL,
     user_password VARCHAR(20) NOT NULL
   )`);
+  con.query(`CREATE TABLE IF NOT EXISTS location(
+    location_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(20) NOT NULL,
+    address VARCHAR(40) NOT NULL
+  )`);
+  con.query(`CREATE TABLE IF NOT EXISTS route(
+    route_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    origin INT NOT NULL,
+    destination INT NOT NULL,
+    type VARCHAR(20) NOT NULL,
+    FOREIGN KEY (origin) REFERENCES location(location_id),
+    FOREIGN KEY (destination) REFERENCES location(location_id)
+  )`);
   con.query(`CREATE TABLE IF NOT EXISTS map(
     map_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    route_id INT
+    route_id INT,
+    FOREIGN KEY (user_id) REFERENCES user(user_id),
+    FOREIGN KEY (route_id) REFERENCES route(route_id)
   )`);
-  con.query(`CREATE TABLE IF NOT EXISTS routes(
-    route_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    location_id INT,
-    location_position INT
+  con.query(`CREATE TABLE IF NOT EXISTS review(
+    review_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    location_id INT NOT NULL,
+    review VARCHAR(100),
+    FOREIGN KEY (user_id) REFERENCES user(user_id),
+    FOREIGN KEY (location_id) REFERENCES location(location_id)
   )`);
-
   console.log("Created tables");
-}
+};
 
-const addUserAndMap = (username, password) => {
-  con.query(`
-  delimiter $$ 
-  CREATE Procedure addUserAndMap()
-  BEGIN
-    INSERT INTO user (user_username, user_password)
-    VALUES (${username}, ${password});
-    SELECT @lastID := LAST_INSERT_ID();
-    INSERT INTO map (user_id)
-    VALUES (@lastID);
-  END$$
-  delimiter ;
-  `)
-}
+// const addUserAndMap = (username, password) => {
+//   con.query(`
+//   delimiter $$
+//   CREATE Procedure addUserAndMap()
+//   BEGIN
+//     INSERT INTO user (user_username, user_password)
+//     VALUES (${username}, ${password});
+//     SELECT @lastID := LAST_INSERT_ID();
+//     INSERT INTO map (user_id)
+//     VALUES (@lastID);
+//   END$$
+//   delimiter ;
+//   `);
+// };
 createTables();
-
 
 con.end((err) => {
   if (err) throw err;
