@@ -90,12 +90,13 @@ const Map = () => {
     // setDirectionsResponse(results)
     setDistance(results.routes[0].legs[0].distance.text);
     setDuration(results.routes[0].legs[0].duration.text);
-    console.log("Route 0: ");
-    console.log(results.routes[0]);
-    console.log(results.routes[0].overview_polyline);
-    console.log("Route 1: ");
-    console.log(results.routes[1]);
-    console.log(results.routes[1].overview_polyline);
+    // console.log("Route 0: ");
+    // console.log(results.routes[0]);
+    // console.log(results.routes[0].overview_polyline);
+    // console.log("Route 1: ");
+    // console.log(results.routes[1]);
+    // console.log(results.routes[1].overview_polyline);
+    console.log(results);
 
     var decodedPoly = decode(results.routes[1].overview_polyline);
 

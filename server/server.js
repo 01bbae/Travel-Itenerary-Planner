@@ -24,7 +24,7 @@ var con = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: process.env.MYSQL_PASSWORD,
-  database: travel
+  database: "travel"
 });
 
 con.connect((err) => {
@@ -47,20 +47,22 @@ con.connect((err) => {
 const createTables = () => {
   // using backticks for template literals
   con.query(`CREATE TABLE IF NOT EXISTS user(
-    user_id INT NOT NULL AUTO INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     user_username VARCHAR(20) UNIQUE NOT NULL,
     user_password VARCHAR(20) NOT NULL
   )`);
   con.query(`CREATE TABLE IF NOT EXISTS map(
-    map_id INT NOT NULL AUTO INCREMENT PRIMARY KEY,
+    map_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     route_id INT
   )`);
   con.query(`CREATE TABLE IF NOT EXISTS routes(
-    route_id INT NOT NULL AUTO INCREMENNT PRIMARY KEY,
+    route_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     location_id INT,
     location_position INT
   )`);
+
+  console.log("Created tables");
 }
 
 const addUserAndMap = (username, password) => {
@@ -77,7 +79,8 @@ const addUserAndMap = (username, password) => {
   delimiter ;
   `)
 }
-createTables;
+createTables();
+
 
 con.end((err) => {
   if (err) throw err;
