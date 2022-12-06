@@ -3,7 +3,7 @@ import "./App.css";
 import Map from "./components/map/Map";
 // import Header from './components/header/Header';
 import Navbar from "./components/navbar/Navbar";
-import Login from "./components/login/Login";
+import Login from "./components/Login/Login";
 
 function App() {
   return (
