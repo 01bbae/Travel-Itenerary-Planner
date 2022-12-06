@@ -3,8 +3,10 @@ dotenv.config();
 const YelpData = require("./response.json");
 const mysql = require("mysql2");
 const express = require("express");
+var bodyParser = require('body-parser')
 
 const app = express();
+var jsonParser = bodyParser.json();
 
 app.get("/query", (req, res) => {
   res.json({
@@ -14,10 +16,6 @@ app.get("/query", (req, res) => {
     "03": "Aruba",
     "04": "United Kingdom",
   });
-});
-
-app.listen(5001, () => {
-  console.log("Server started on port 5000");
 });
 
 var con = mysql.createConnection({
@@ -53,8 +51,8 @@ const createTables = () => {
   )`);
   con.query(`CREATE TABLE IF NOT EXISTS location(
     location_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(20) NOT NULL,
-    address VARCHAR(40) NOT NULL
+    name VARCHAR(50) NOT NULL,
+    address VARCHAR(100) NOT NULL
   )`);
   con.query(`CREATE TABLE IF NOT EXISTS route(
     route_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -82,6 +80,8 @@ const createTables = () => {
   console.log("Created tables");
 };
 
+
+
 // const addUserAndMap = (username, password) => {
 //   con.query(`
 //   delimiter $$
@@ -98,22 +98,99 @@ const createTables = () => {
 // };
 createTables();
 
-// YelpData.businesses.forEach((element, index) => {
-//   con.query(`
-//   delimiter $$
-//   CREATE Procedure addUserAndMap()
-//   BEGIN
-//     INSERT INTO user (user_username, user_password)
-//     VALUES (${element.name}, ${element.location.address1});
-//     SELECT @lastID := LAST_INSERT_ID();
-//     INSERT INTO map (user_id)
-//     VALUES (@lastID);
-//   END$$
-//   delimiter ;
-//   `);
-// });
+// const insertBusinessInDatabase = () => {
+//   YelpData.businesses.forEach((element, index) => {
+//     locationName = YelpData.businesses[index].name;
+//     locationAddress = YelpData.businesses[index].location.address1;
 
-con.end((err) => {
-  if (err) throw err;
-  console.log("Disconnected!");
+//     con.query(`
+//       INSERT INTO location (name, address)
+//       VALUES (?)`, [[locationName, locationAddress]]);
+
+//   });
+// }
+
+// insertBusinessInDatabase();
+
+
+/* -------------------------API INTEGRATION----------------------------------------------- */
+
+// Creating a route
+app.post("/create-route", jsonParser, async(req, res) => {
+  try {
+      const origin = req.body.origin;
+      const destination = req.body.destination;
+      const type = req.body.type;
+
+
+      console.log("Origin: ", origin);
+      console.log("Destination: ", destination);
+      console.log("Type: ", type);
+
+      con.query(`
+      INSERT INTO route (origin, destination, type)
+      VALUES (?)`, [[origin, destination, type]]);
+
+      res.status(500).json("Success");
+  } catch(err) {
+      res.status(500).json(err);
+      console.log("ERROR");
+  }
 });
+
+// Getting a route given id in parameter
+app.get("/get-route/:id", jsonParser, async(req, res) => {
+  try {
+    console.log(req.params.id);
+    con.query(`SELECT * FROM route
+                WHERE route_id = ?;`
+              , req.params.id, function (err, results){
+      if (err) throw err;
+      console.log(results);
+    });
+    
+    res.status(500).json("Success");
+  }
+
+  catch (err) {
+    res.status(500).json(err);
+    console.log("Error with getting the route");
+  }
+});
+
+// Delete a route given id in parameter
+app.delete("/delete-route/:id", jsonParser, async(req, res) => {
+  try {
+    console.log(req.params.id);
+    con.query(`DELETE FROM route
+                WHERE route_id = ?;`
+              , req.params.id, function (err, results){
+      if (err) throw err;
+      console.log(results);
+    });
+    
+    res.status(500).json("Success");
+  }
+
+  catch (err) {
+    res.status(500).json(err);
+    console.log("Error with deleting the route");
+  }
+});
+
+/* --------------------------------------------------------------------------------------- */
+
+
+
+
+app.listen(5001, () => {
+  console.log("Server started on port 5001");
+});
+
+
+
+
+// con.end((err) => {
+//   if (err) throw err;
+//   console.log("Disconnected!");
+// });
