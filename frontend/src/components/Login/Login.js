@@ -21,7 +21,16 @@ export default function Login(props) {
         headers: {
           "Content-type": "application/json; charset=UTF-8",
         },
-      });
+      })
+        .then((res) => {
+          res.json();
+        })
+        .then((data) => {
+          console.log(data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     } else {
       fetch("/login", {
         method: "POST",

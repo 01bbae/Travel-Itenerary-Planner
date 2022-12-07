@@ -180,27 +180,35 @@ app.delete("/delete-route/:id", jsonParser, async (req, res) => {
 });
 
 // Register new Account
-app.post("/register", jsonParser, async (req, res) => {
+app.post("/register", jsonParser, (req, res) => {
   try {
-    const email = req.body.email;
+    console.log(req.body);
+    const username = req.body.username;
     const password = req.body.password;
 
-    console.log("username: ", email);
-    console.log("password: ", password);
+    if (username == null || password == null) {
+      throw "Unsuccessful post from frontend: value(s) null.";
+    }
 
     con.query(
       `
-      INSERT INTO route (username, password)
-      VALUES (${mysql.escape(email)},${mysql.escape(password)})`,
-      [[origin, destination, type]],
-      (err, res, fields) => {}
+      INSERT INTO user (username, password)
+      VALUES (${mysql.escape(username)},${mysql.escape(password)})`,
+      (err, res, fields) => {
+        if (err) {
+          if (err.code == "ER_DUP_ENTRY") {
+            throw "Account already exists";
+          }
+          throw err;
+        }
+        console.log(res);
+      }
     );
 
     return res.status(200).json({ success: true });
   } catch (err) {
     console.log("ERROR");
     console.log(err);
-    // return res.status(400).json({ success: false });
   }
 });
 
@@ -213,7 +221,7 @@ app.post("/login", jsonParser, (req, res) => {
     let login = false;
 
     if (username == null || password == null) {
-      throw "Unsuccessful post from frontend: values null.";
+      throw "Unsuccessful post from frontend: value(s) null.";
     }
 
     con.query(
@@ -243,7 +251,6 @@ app.post("/login", jsonParser, (req, res) => {
   } catch (err) {
     console.log("ERROR: unable to log in");
     console.log(err);
-    // return res.status(400).json({ login: false });
   }
 });
 
