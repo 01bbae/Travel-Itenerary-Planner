@@ -3,7 +3,7 @@ dotenv.config();
 const YelpData = require("./response.json");
 const mysql = require("mysql2");
 const express = require("express");
-var bodyParser = require('body-parser')
+var bodyParser = require("body-parser");
 
 const app = express();
 var jsonParser = bodyParser.json();
@@ -46,8 +46,8 @@ const createTables = () => {
   // using backticks for template literals
   con.query(`CREATE TABLE IF NOT EXISTS user(
     user_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    user_username VARCHAR(20) UNIQUE NOT NULL,
-    user_password VARCHAR(20) NOT NULL
+    username VARCHAR(20) UNIQUE NOT NULL,
+    password VARCHAR(20) NOT NULL
   )`);
   con.query(`CREATE TABLE IF NOT EXISTS location(
     location_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -80,8 +80,6 @@ const createTables = () => {
   console.log("Created tables");
 };
 
-
-
 // const addUserAndMap = (username, password) => {
 //   con.query(`
 //   delimiter $$
@@ -112,83 +110,148 @@ createTables();
 
 // insertBusinessInDatabase();
 
-
 /* -------------------------API INTEGRATION----------------------------------------------- */
 
 // Creating a route
-app.post("/create-route", jsonParser, async(req, res) => {
+app.post("/create-route", jsonParser, async (req, res) => {
   try {
-      const origin = req.body.origin;
-      const destination = req.body.destination;
-      const type = req.body.type;
+    const origin = req.body.origin;
+    const destination = req.body.destination;
+    const type = req.body.type;
 
+    console.log("Origin: ", origin);
+    console.log("Destination: ", destination);
+    console.log("Type: ", type);
 
-      console.log("Origin: ", origin);
-      console.log("Destination: ", destination);
-      console.log("Type: ", type);
-
-      con.query(`
+    con.query(
+      `
       INSERT INTO route (origin, destination, type)
-      VALUES (?)`, [[origin, destination, type]]);
+      VALUES (?)`,
+      [[origin, destination, type]]
+    );
 
-      res.status(500).json("Success");
-  } catch(err) {
-      res.status(500).json(err);
-      console.log("ERROR");
+    res.status(500).json("Success");
+  } catch (err) {
+    res.status(500).json(err);
+    console.log("ERROR");
   }
 });
 
 // Getting a route given id in parameter
-app.get("/get-route/:id", jsonParser, async(req, res) => {
+app.get("/get-route/:id", jsonParser, async (req, res) => {
   try {
     console.log(req.params.id);
-    con.query(`SELECT * FROM route
-                WHERE route_id = ?;`
-              , req.params.id, function (err, results){
-      if (err) throw err;
-      console.log(results);
-    });
-    
-    res.status(500).json("Success");
-  }
+    con.query(
+      `SELECT * FROM route
+                WHERE route_id = ?;`,
+      req.params.id,
+      function (err, results) {
+        if (err) throw err;
+        console.log(results);
+      }
+    );
 
-  catch (err) {
+    res.status(500).json("Success");
+  } catch (err) {
     res.status(500).json(err);
     console.log("Error with getting the route");
   }
 });
 
 // Delete a route given id in parameter
-app.delete("/delete-route/:id", jsonParser, async(req, res) => {
+app.delete("/delete-route/:id", jsonParser, async (req, res) => {
   try {
     console.log(req.params.id);
-    con.query(`DELETE FROM route
-                WHERE route_id = ?;`
-              , req.params.id, function (err, results){
-      if (err) throw err;
-      console.log(results);
-    });
-    
-    res.status(500).json("Success");
-  }
+    con.query(
+      `DELETE FROM route
+                WHERE route_id = ?;`,
+      req.params.id,
+      function (err, results) {
+        if (err) throw err;
+        console.log(results);
+      }
+    );
 
-  catch (err) {
+    res.status(500).json("Success");
+  } catch (err) {
     res.status(500).json(err);
     console.log("Error with deleting the route");
   }
 });
 
+// Register new Account
+app.post("/register", jsonParser, async (req, res) => {
+  try {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    console.log("username: ", email);
+    console.log("password: ", password);
+
+    con.query(
+      `
+      INSERT INTO route (username, password)
+      VALUES (${mysql.escape(email)},${mysql.escape(password)})`,
+      [[origin, destination, type]],
+      (err, res, fields) => {}
+    );
+
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.log("ERROR");
+    console.log(err);
+    // return res.status(400).json({ success: false });
+  }
+});
+
+// Login Functionality
+app.post("/login", jsonParser, (req, res) => {
+  try {
+    console.log(req.body);
+    const username = req.body.username;
+    const password = req.body.password;
+    let login = false;
+
+    if (username == null || password == null) {
+      throw "Unsuccessful post from frontend: values null.";
+    }
+
+    con.query(
+      `
+      SELECT COUNT(*) AS Count FROM user
+      WHERE username = ${mysql.escape(username)} AND password = ${mysql.escape(
+        password
+      )}`,
+      (err, res, fields) => {
+        console.log(res);
+        if (err) {
+          throw err;
+        }
+        if (res[0].Count > 0) {
+          login = true;
+          console.log("login successful");
+        } else {
+          console.log("login failed");
+        }
+      }
+    );
+    if (login) {
+      return res.status(200).json({ login: true });
+    } else {
+      return res.status(400).json({ login: false });
+    }
+  } catch (err) {
+    console.log("ERROR: unable to log in");
+    console.log(err);
+    // return res.status(400).json({ login: false });
+  }
+});
+
 /* --------------------------------------------------------------------------------------- */
-
-
-
 
 app.listen(5001, () => {
   console.log("Server started on port 5001");
 });
-
-
-
 
 // con.end((err) => {
 //   if (err) throw err;
