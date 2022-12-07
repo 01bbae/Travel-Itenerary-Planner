@@ -77,8 +77,8 @@ export default function Login(props) {
       </form>
       <button className="button" onClick={() => setRegister(!register)}>
         {register
-          ? "Don't have an account? Register here."
-          : "Already have an account? Log in here."}
+          ? "Already have an account? Log in here."
+          : "Don't have an account? Register here."}
       </button>
     </div>
   );
