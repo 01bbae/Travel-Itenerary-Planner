@@ -14,6 +14,7 @@ import {
   Input,
   SkeletonText,
   Text,
+  Select,
 } from "@chakra-ui/react";
 import {
   GoogleMap,
@@ -26,7 +27,7 @@ import {
   Polyline,
 } from "@react-google-maps/api";
 import "./Map.css";
-import "../../response.json";
+import response from "../../response.json";
 
 // Initialize center
 const center = { lat: 33.79, lng: -117.85 };
@@ -40,6 +41,7 @@ const Map = () => {
   const [directionsResponse, setDirectionsResponse] = useState(null);
   const [distance, setDistance] = useState("");
   const [duration, setDuration] = useState("");
+  const [calculated, setCalculated] = useState(false);
   const [mapContainer, setMapContainer] = useState(null);
 
   const mapOptions = {
@@ -50,9 +52,20 @@ const Map = () => {
     },
   };
 
-  const createDropdown = () => {};
+  const createDropdown = () => {
+    let dropdown = [];
+    response.businesses.forEach((element, index) => {
+      dropdown.push(
+        <option id={index} value={element.name}>
+          {element.name}
+        </option>
+      );
+    });
+    return dropdown;
+  };
 
   async function calculateRoute() {
+    // dont forget to add if route is calculated, create button to save route (just set "calculated" to true)
     if (originRef.current.value === "" || destiantionRef.current.value === "") {
       return;
     }
@@ -190,51 +203,65 @@ const Map = () => {
       </Box>
 
       <Box className="inputBox">
-        <HStack className="form">
+        <Flex className="form">
           {/* Input for origin */}
-          <Box flexGrow={1}>
-            {/* <Autocomplete>
+          <Box>
+            <Select className="dropdown" placeholder="Select Origin">
+              {createDropdown()}
+            </Select>
+          </Box>
+          {/* <Autocomplete>
               <Input type="text" placeholder="Origin" ref={originRef} />
             </Autocomplete> */}
-          </Box>
 
           {/* Input for Destination */}
-          <Box flexGrow={1}>
-            {/* <Autocomplete>
+          <Box>
+            <Select className="dropdown" placeholder="Select Destination">
+              {createDropdown()}
+            </Select>
+          </Box>
+          {/* <Autocomplete>
               <Input
                 type="text"
                 placeholder="Destination"
                 ref={destiantionRef}
               />
             </Autocomplete> */}
-          </Box>
 
           {/* Button for calculate */}
           <ButtonGroup>
-            <Button colorScheme="pink" type="submit" onClick={calculateRoute}>
+            <Button
+              type="submit"
+              className="submitButton"
+              onClick={calculateRoute}
+            >
               Calculate Route
             </Button>
-            <IconButton
+            {/* <IconButton
               aria-label="center back"
               title="close"
               onClick={clearRoute}
-            />
+            /> */}
           </ButtonGroup>
-        </HStack>
+        </Flex>
 
         {/* Displaying output (Distance and Duration) */}
-        <HStack className="outputBox">
-          <Text>Distance: {distance} </Text>
-          <Text>Duration: {duration} </Text>
-          <IconButton
+        <Flex className="outputBox">
+          <Box>
+            <Text>Distance: {distance} </Text>
+          </Box>
+          <Box>
+            <Text>Duration: {duration} </Text>
+          </Box>
+          {/* <IconButton
             aria-label="center back"
             isRound
             onClick={() => {
               map.panTo(center);
               map.setZoom(15);
             }}
-          />
-        </HStack>
+          /> */}
+        </Flex>
       </Box>
     </Flex>
   ) : (

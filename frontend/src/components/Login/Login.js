@@ -23,6 +23,7 @@ export default function Login(props) {
         },
       })
         .then((res) => {
+          console.log(res.status);
           res.json();
         })
         .then((data) => {

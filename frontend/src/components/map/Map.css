@@ -1,6 +1,5 @@
 .flexBox {
-    position: relative;
-    align-items: center;
+    position: absolute;
     flex-direction: column;
     height: 100vh;
     width: 100vw;
@@ -29,11 +28,17 @@
 }
 
 .outputBox {
-    padding: 4;
+    background-color: red;
+    margin-left: 0;
     margin-top: 4;
-    justify-content: space-between;
+    justify-content: space-evenly;
 }
 
 .form{
     opacity: 100%;
+    justify-content: space-around;
+}
+
+.dropdown{
+    margin:10px;
 }
