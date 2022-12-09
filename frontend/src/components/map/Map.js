@@ -34,8 +34,17 @@ const center = { lat: 33.79, lng: -117.85 };
 
 const Map = () => {
   // const [ libraries ] = useState(['places']);
+
+  // delete refs later
   const originRef = useRef();
   const destiantionRef = useRef();
+
+  const [origin, setOrigin] = useState();
+  const [destination, setDestination] = useState();
+  const [mode, setMode] = useState();
+
+  const [originReview, setOriginReview] = useState();
+  const [destinationReview, setDestinationReview] = useState();
 
   const [map, setMap] = useState(null);
   const [directionsResponse, setDirectionsResponse] = useState(null);
@@ -51,12 +60,13 @@ const Map = () => {
       lng: -117.85,
     },
   };
+  
 
   const createDropdown = () => {
     let dropdown = [];
     response.businesses.forEach((element, index) => {
       dropdown.push(
-        <option id={index} value={element.name}>
+        <option id={index} value={element.alias}>
           {element.name}
         </option>
       );
@@ -64,69 +74,131 @@ const Map = () => {
     return dropdown;
   };
 
+  const createDropdownModes = () => {
+    let dropdownModes = [];
+    var modeArrNames = ["DRIVE", "TRANSIT"]
+    for (let i = 0; i < modeArrNames.length; ++i){
+      dropdownModes.push(
+        <option id={modeArrNames[i]} value={modeArrNames[i]}>{modeArrNames[i]}</option>);
+    }
+    // dropdownModes.push(
+    //   <option id="test1" value={"DRIVE"}></option>
+
+    // )
+    return dropdownModes;
+  };
+
+
+  async function saveRoute (e) {
+    e.preventDefault();
+    console.log("test")
+
+    var originLocationId;
+    var destinationLocationId;
+    const originLocationID_obj = await fetch("/get-location-id/" + origin)
+      .then((response) => response.json())
+      .then((responseJson) => {
+        originLocationId = responseJson.location_id[0];
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
+      const destinationLocationID_obj = await fetch("/get-location-id/" + destination)
+      .then((response) => response.json())
+      .then((responseJson) => {
+        destinationLocationId = responseJson.location_id[0];
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
+      console.log(originLocationId.location_id);
+      console.log(destinationLocationId.location_id);
+    
+
+    let routeObj = new Object();
+
+    routeObj.origin = originLocationId.location_id;
+    routeObj.destination = destinationLocationId.location_id;
+    routeObj.type = mode;
+
+    console.log(routeObj);
+      fetch("/create-route", {
+        method: "POST",
+        mode: "cors",
+        body: JSON.stringify(routeObj),
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+        },
+      })
+        .then((res) => {
+          console.log(res.status);
+          res.json();
+        })
+        .then((data) => {
+          console.log(data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+  }
+
   async function calculateRoute() {
     // dont forget to add if route is calculated, create button to save route (just set "calculated" to true)
-    if (originRef.current.value === "" || destiantionRef.current.value === "") {
+    console.log("Origin: ", origin);
+    console.log("Destination: ", destination);
+
+    var originAddr;
+    var destinationAddr;
+
+    // get origin address through api
+    const originAddress = await fetch("/get-location-address/" + origin)
+      .then((response) => response.json())
+      .then((responseJson) => {
+
+        originAddr = responseJson.address[0];
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
+      // get destination address through api
+      const destinationAddress = await fetch("/get-location-address/" + destination)
+      .then((response) => response.json())
+      .then((responseJson) => {
+
+        destinationAddr = responseJson.address[0];
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    
+    console.log(originAddr.address);
+    console.log(destinationAddr.address);
+
+    if (origin === "" || destination === "") {
       return;
     }
+
+    // Google API direction service request
     // eslint-disable-next-line no-undef
     const directionsService = new google.maps.DirectionsService();
     var results = await directionsService.route({
-      origin: originRef.current.value,
-      destination: destiantionRef.current.value,
+      origin: originAddr.address,
+      destination: destinationAddr.address,
       // eslint-disable-next-line no-undef
       travelMode: google.maps.TravelMode.TRANSIT,
       // waypoints: [{ stopover: true, location: { placeId: "ChIJRVj1dgPP20YRBWB4A_sUx_Q" } }],
       provideRouteAlternatives: true,
     });
-
     setDirectionsResponse(results);
-    setDistance(results.routes[0].legs[0].distance.text);
-    setDuration(results.routes[0].legs[0].duration.text);
-    // console.log("Route 0: ");
-    // console.log(results.routes[0]);
-    // console.log(results.routes[0].overview_polyline);
-    // console.log("Route 1: ");
-    // console.log(results.routes[1]);
-    // console.log(results.routes[1].overview_polyline);
-    console.log(results);
 
-    var decodedPoly = decode(results.routes[1].overview_polyline);
-
-    // Get random index for waypoints
-    var randomIndexes = [];
-    var num;
-    for (let i = 0; i < 25; ++i) {
-      num = Math.floor(Math.random() * decodedPoly.length);
-      randomIndexes.push(num);
-    }
-    for (let i = 0; i < randomIndexes.length; ++i) {
-      console.log(randomIndexes[i]);
-    }
-
-    // Get wayPoints (lat, lng) in an array
-    var wayPoints = [];
-    for (let i = 0; i < randomIndexes.length; ++i) {
-      // Max waypoints you can add is 25
-      let curr_lat = decodedPoly[randomIndexes[i]]["latitude"];
-      let curr_lng = decodedPoly[randomIndexes[i]]["longitude"];
-      // eslint-disable-next-line no-undef
-      var wayPoint = new google.maps.LatLng({ lat: curr_lat, lng: curr_lng });
-      wayPoints.push({ location: wayPoint, stopover: false });
-    }
-
-    // Send another request, this time for the route we want to display with an added waypoint parameter
-    const results2 = await directionsService.route({
-      origin: originRef.current.value,
-      destination: destiantionRef.current.value,
-      // eslint-disable-next-line no-undef
-      travelMode: google.maps.TravelMode.DRIVING,
-      // waypoints: [{ stopover: true, location: { placeId: "ChIJRVj1dgPP20YRBWB4A_sUx_Q" } }],
-      provideRouteAlternatives: true,
-      // waypoints: wayPoints,
-    });
-    // setDirectionsResponse(results2);
-    console.log(results2);
+    
+    setOriginReview("test1Review");
+    setDestinationReview("test2Review");
+    
+    
   }
   function clearRoute() {
     setDirectionsResponse(null);
@@ -134,43 +206,6 @@ const Map = () => {
     setDuration("");
     originRef.current.value = "";
     destiantionRef.current.value = "";
-  }
-
-  // Function which decodes the overview_polyline and returns coordinates.
-  function decode(encoded) {
-    // Reference: https://gist.github.com/ismaels/6636986
-    // array that holds the points
-    var points = [];
-    var index = 0,
-      len = encoded.length;
-    var lat = 0,
-      lng = 0;
-    while (index < len) {
-      var b,
-        shift = 0,
-        result = 0;
-      do {
-        b = encoded.charAt(index++).charCodeAt(0) - 63; //finds ascii                                                                                    //and substract it by 63
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-
-      var dlat = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
-      lat += dlat;
-      shift = 0;
-      result = 0;
-      do {
-        b = encoded.charAt(index++).charCodeAt(0) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-
-      var dlng = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
-      lng += dlng;
-
-      points.push({ latitude: lat / 1e5, longitude: lng / 1e5 });
-    }
-    return points;
   }
 
   const { isLoaded } = useJsApiLoader({
@@ -206,7 +241,7 @@ const Map = () => {
         <Flex className="form">
           {/* Input for origin */}
           <Box>
-            <Select className="dropdown" placeholder="Select Origin">
+            <Select className="dropdown" id="originDropdown" value = {origin} onChange={(e) => setOrigin(e.target.value)} placeholder="Select Origin">
               {createDropdown()}
             </Select>
           </Box>
@@ -216,10 +251,20 @@ const Map = () => {
 
           {/* Input for Destination */}
           <Box>
-            <Select className="dropdown" placeholder="Select Destination">
+          <Select className="dropdown" id="destinationDropdown" value = {destination} onChange={(e) => setDestination(e.target.value)} placeholder="Select Destination">
               {createDropdown()}
             </Select>
           </Box>
+
+
+          {/* DROPDOWN MODES (Driving, Transit) */}
+          <Box>
+          <Select className="dropdown" id="modeDropdown" value = {mode} onChange={(e) => setMode(e.target.value)} placeholder="Select Mode">
+              {createDropdownModes()}
+            </Select>
+          </Box>
+
+          
           {/* <Autocomplete>
               <Input
                 type="text"
@@ -243,6 +288,23 @@ const Map = () => {
               onClick={clearRoute}
             /> */}
           </ButtonGroup>
+          
+          {/* SAVE ROUTE BUTTON */}
+          <ButtonGroup>
+            <Button
+              type="submit"
+              className="submitButton"
+              onClick={saveRoute}
+            >
+              Save Route 
+            </Button>
+            {/* <IconButton
+              aria-label="center back"
+              title="close"
+              onClick={clearRoute}
+            /> */}
+          </ButtonGroup>
+
         </Flex>
 
         {/* Displaying output (Distance and Duration) */}
@@ -262,6 +324,7 @@ const Map = () => {
             }}
           /> */}
         </Flex>
+        <h1>{originReview}</h1>
       </Box>
     </Flex>
   ) : (

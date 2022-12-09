@@ -28,7 +28,8 @@
         "zip_code": "92866",
         "country": "US",
         "state": "CA",
-        "display_address": ["204 W Chapman Ave", "Orange, CA 92866"]
+        "display_address": ["204 W Chapman Ave", "Orange, CA 92866"],
+        "full_address": "204 W Chapman Ave, Orange, CA 92866"
       },
       "phone": "+17142783010",
       "display_phone": "(714) 278-3010",
@@ -59,7 +60,8 @@
         "zip_code": "92866",
         "country": "US",
         "state": "CA",
-        "display_address": ["201 N Glassell St", "Orange, CA 92866"]
+        "display_address": ["201 N Glassell St", "Orange, CA 92866"],
+        "full_address": "201 N Glassell St, Orange, CA 92866"
       },
       "phone": "+17142899714",
       "display_phone": "(714) 289-9714",
@@ -93,7 +95,8 @@
         "zip_code": "92866",
         "country": "US",
         "state": "CA",
-        "display_address": ["109 S Glassell St", "Orange, CA 92866"]
+        "display_address": ["109 S Glassell St", "Orange, CA 92866"],
+        "full_address": "109 S Glassell St, Orange, CA 92866"
       },
       "phone": "+17143633309",
       "display_phone": "(714) 363-3309",
@@ -120,7 +123,8 @@
         "zip_code": "92866",
         "country": "US",
         "state": "CA",
-        "display_address": ["165 N Glassell St", "Orange, CA 92866"]
+        "display_address": ["165 N Glassell St", "Orange, CA 92866"],
+        "full_address": "165 N Glassell St, Orange, CA 92866"
       },
       "phone": "+17143633022",
       "display_phone": "(714) 363-3022",
@@ -150,7 +154,8 @@
         "zip_code": "92867",
         "country": "US",
         "state": "CA",
-        "display_address": ["807 N Tustin St", "Orange, CA 92867"]
+        "display_address": ["807 N Tustin St", "Orange, CA 92867"],
+        "full_address": "807 N Tustin St, Orange, CA 92867"
       },
       "phone": "+17146026000",
       "display_phone": "(714) 602-6000",
@@ -184,7 +189,8 @@
         "zip_code": "92868",
         "country": "US",
         "state": "CA",
-        "display_address": ["445 S Main St", "Ste B", "Orange, CA 92868"]
+        "display_address": ["445 S Main St", "Ste B", "Orange, CA 92868"],
+        "full_address": "445 S Main St, Ste B, Orange, CA 92868"
       },
       "phone": "+17147715410",
       "display_phone": "(714) 771-5410",
@@ -211,7 +217,8 @@
         "zip_code": "92866",
         "country": "US",
         "state": "CA",
-        "display_address": ["141 S Glassell St", "Orange, CA 92866"]
+        "display_address": ["141 S Glassell St", "Orange, CA 92866"],
+        "full_address": "141 S Glassell St, Orange, CA 92866"
       },
       "phone": "+17146333038",
       "display_phone": "(714) 633-3038",
@@ -241,7 +248,8 @@
         "zip_code": "92867",
         "country": "US",
         "state": "CA",
-        "display_address": ["774 N Tustin St", "Orange, CA 92867"]
+        "display_address": ["774 N Tustin St", "Orange, CA 92867"],
+        "full_address": "774 N Tustin St, Orange, CA 92867"
       },
       "phone": "+17143633333",
       "display_phone": "(714) 363-3333",
@@ -268,7 +276,8 @@
         "zip_code": "92701",
         "country": "US",
         "state": "CA",
-        "display_address": ["601 E Santa Ana Blvd", "Santa Ana, CA 92701"]
+        "display_address": ["601 E Santa Ana Blvd", "Santa Ana, CA 92701"],
+        "full_address": "601 E Santa Ana Blvd, Santa Ana, CA 92701"
       },
       "phone": "+17144800225",
       "display_phone": "(714) 480-0225",
@@ -299,7 +308,8 @@
         "zip_code": "92866",
         "country": "US",
         "state": "CA",
-        "display_address": ["114 N Olive St", "Orange, CA 92866"]
+        "display_address": ["114 N Olive St", "Orange, CA 92866"],
+        "full_address": "114 N Olive St, Orange, CA 92866"
       },
       "phone": "+17183746858",
       "display_phone": "(718) 374-6858",
@@ -330,7 +340,9 @@
         "zip_code": "92701",
         "country": "US",
         "state": "CA",
-        "display_address": ["220 E 4th St", "Ste 102", "Santa Ana, CA 92701"]
+        "display_address": ["220 E 4th St", "Ste 102", "Santa Ana, CA 92701"],
+        "full_address": "220 E 4th St, Ste 102, Santa Ana, CA 92701"
+        
       },
       "phone": "+17145604444",
       "display_phone": "(714) 560-4444",
@@ -360,7 +372,8 @@
         "zip_code": "92868",
         "country": "US",
         "state": "CA",
-        "display_address": ["374 S Main St", "Orange, CA 92868"]
+        "display_address": ["374 S Main St", "Orange, CA 92868"],
+        "full_address": "374 S Main St, Orange, CA 92868"
       },
       "phone": "+16572842001",
       "display_phone": "(657) 284-2001",
@@ -391,7 +404,8 @@
         "zip_code": "92805",
         "country": "US",
         "state": "CA",
-        "display_address": ["195 W Center St Promenade", "Anaheim, CA 92805"]
+        "display_address": ["195 W Center St Promenade", "Anaheim, CA 92805"],
+        "full_address": "195 W Center St Promenade, Anaheim, CA 92805"
       },
       "phone": "+17146037194",
       "display_phone": "(714) 603-7194",
@@ -425,7 +439,8 @@
         "zip_code": "92866",
         "country": "US",
         "state": "CA",
-        "display_address": ["240 W Chapman Ave", "Ste 101", "Orange, CA 92866"]
+        "display_address": ["240 W Chapman Ave", "Ste 101", "Orange, CA 92866"],
+        "full_address": "240 W Chapman Ave, Ste 101, Orange, CA 92866"
       },
       "phone": "+16572841850",
       "display_phone": "(657) 284-1850",
@@ -455,7 +470,8 @@
         "zip_code": "92866",
         "country": "US",
         "state": "CA",
-        "display_address": ["100 S Glassell St", "Orange, CA 92866"]
+        "display_address": ["100 S Glassell St", "Orange, CA 92866"],
+        "full_address": "100 S Glassell St, Orange, CA 92866"
       },
       "phone": "+17142881077",
       "display_phone": "(714) 288-1077",
@@ -488,7 +504,8 @@
         "zip_code": "92866",
         "country": "US",
         "state": "CA",
-        "display_address": ["36 Plaza Sq", "Orange, CA 92866"]
+        "display_address": ["36 Plaza Sq", "Orange, CA 92866"],
+        "full_address": "36 Plaza Sq, Orange, CA 92866"
       },
       "phone": "+17146335842",
       "display_phone": "(714) 633-5842",
@@ -519,7 +536,8 @@
         "zip_code": "92866",
         "country": "US",
         "state": "CA",
-        "display_address": ["238 W Chapman Ave", "Ste 100", "Orange, CA 92866"]
+        "display_address": ["238 W Chapman Ave", "Ste 100", "Orange, CA 92866"],
+        "full_address": "238 W Chapman Ave, Ste 100, Orange, CA 92866"
       },
       "phone": "+16572210619",
       "display_phone": "(657) 221-0619",
@@ -552,7 +570,8 @@
         "zip_code": "92866",
         "country": "US",
         "state": "CA",
-        "display_address": ["80 Plaza Sq", "Orange, CA 92866"]
+        "display_address": ["80 Plaza Sq", "Orange, CA 92866"],
+        "full_address": "80 Plaza Sq, Orange, CA 92866"
       },
       "phone": "+17149887700",
       "display_phone": "(714) 988-7700",
@@ -583,7 +602,8 @@
         "zip_code": "92866",
         "country": "US",
         "state": "CA",
-        "display_address": ["122 North Glassell St", "Orange, CA 92866"]
+        "display_address": ["122 North Glassell St", "Orange, CA 92866"],
+        "full_address": "122 North Glassell St, Orange, CA 92866"
       },
       "phone": "+17146399600",
       "display_phone": "(714) 639-9600",
@@ -614,7 +634,8 @@
         "zip_code": "92807",
         "country": "US",
         "state": "CA",
-        "display_address": ["5775 E Santa Ana Canyon Rd", "Anaheim, CA 92807"]
+        "display_address": ["5775 E Santa Ana Canyon Rd", "Anaheim, CA 92807"],
+        "full_address": "5775 E Santa Ana Canyon Rd, Anaheim, CA 92807"
       },
       "phone": "+17142831062",
       "display_phone": "(714) 283-1062",

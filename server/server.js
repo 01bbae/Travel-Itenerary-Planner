@@ -52,6 +52,7 @@ const createTables = () => {
   con.query(`CREATE TABLE IF NOT EXISTS location(
     location_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
+    alias VARCHAR(100) NOT NULL,
     address VARCHAR(100) NOT NULL
   )`);
   con.query(`CREATE TABLE IF NOT EXISTS route(
@@ -96,19 +97,22 @@ const createTables = () => {
 // };
 createTables();
 
-// const insertBusinessInDatabase = () => {
-//   YelpData.businesses.forEach((element, index) => {
-//     locationName = YelpData.businesses[index].name;
-//     locationAddress = YelpData.businesses[index].location.address1;
+function insertBusinessInDatabase(){
+  YelpData.businesses.forEach((element, index) => {
+    locationName = YelpData.businesses[index].name;
+    locationAlias = YelpData.businesses[index].alias;
+    locationAddress = YelpData.businesses[index].location["full_address"];
 
-//     con.query(`
-//       INSERT INTO location (name, address)
-//       VALUES (?)`, [[locationName, locationAddress]]);
+    con.query(`
+      INSERT INTO location (name, alias, address)
+      VALUES (?)`, [[locationName, locationAlias, locationAddress]]);
 
-//   });
-// }
+  });
+  
+  console.log("Inserted locations into database");
+}
 
-// insertBusinessInDatabase();
+insertBusinessInDatabase();
 
 /* -------------------------API INTEGRATION----------------------------------------------- */
 
@@ -130,7 +134,7 @@ app.post("/create-route", jsonParser, async (req, res) => {
       [[origin, destination, type]]
     );
 
-    res.status(500).json("Success");
+    res.status(200).json("Success");
   } catch (err) {
     res.status(500).json(err);
     console.log("ERROR");
@@ -151,7 +155,56 @@ app.get("/get-route/:id", jsonParser, async (req, res) => {
       }
     );
 
-    res.status(500).json("Success");
+    res.status(200).json("Success");
+  } catch (err) {
+    res.status(500).json(err);
+    console.log("Error with getting the route");
+  }
+});
+
+app.get("/get-location-id/:locationAlias", jsonParser, async (req, res) => {
+  try {
+    console.log(req.params.locationAlias);
+    con.query(
+      `SELECT location_id FROM location
+                WHERE alias = ?;`,
+      req.params.locationAlias,
+      function (err, results) {
+        if (err) 
+        {
+          console.log(err);
+          res.sendStatus(500);
+          return;
+        }
+        res.status(200).send({
+          location_id: results
+        });
+      }
+    );
+
+    // res.status(200).json("Success");
+  } catch (err) {
+    res.status(500).json(err);
+    console.log("Error with getting the route");
+  }
+});
+
+app.get("/get-location-address/:locationAlias", jsonParser, async (req, res) => {
+  try {
+    console.log(req.params.id);
+    con.query(
+      `SELECT address FROM location
+                WHERE alias = ?;`,
+      req.params.locationAlias,
+      function (err, results) {
+        if (err) throw err;
+        console.log(results);
+        res.status(200).send({
+          address: results
+        });
+      }
+    );
+
   } catch (err) {
     res.status(500).json(err);
     console.log("Error with getting the route");
