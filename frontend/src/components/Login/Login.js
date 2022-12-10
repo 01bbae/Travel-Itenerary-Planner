@@ -2,14 +2,14 @@ import React from "react";
 import { useState } from "react";
 import "./Login.css";
 
-export default function Login(props) {
+const Login = () => {
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [register, setRegister] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    let loginObj = new Object();
+    let loginObj = {};
     loginObj.username = email;
     loginObj.password = pass;
     console.log(loginObj);
@@ -92,4 +92,6 @@ export default function Login(props) {
       </button>
     </div>
   );
-}
+};
+
+export default Login;

@@ -5,16 +5,18 @@ import Map from "./components/map/Map";
 import Navbar from "./components/navbar/Navbar";
 import Login from "./components/login/Login";
 
-function App() {
+import React from "react";
+
+const App = () => {
   return (
-    <>
+    <div>
       <Navbar />
       <Routes>
         <Route path="/" element={<Map />} />
         <Route path="/login" element={<Login />} />
       </Routes>
-    </>
+    </div>
   );
-}
+};
 
 export default App;
