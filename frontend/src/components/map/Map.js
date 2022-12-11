@@ -28,6 +28,7 @@ import {
 } from "@react-google-maps/api";
 import "./Map.css";
 import response from "../../response.json";
+import { useNavigate } from "react-router-dom";
 
 // Initialize center
 const center = { lat: 33.79, lng: -117.85 };
@@ -88,10 +89,46 @@ const Map = () => {
     return dropdownModes;
   };
 
+  async function commit(e){
+    e.preventDefault();
+
+    const commitChanges = await fetch("/commit")
+      .then((response) => response.json())
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
+  async function undo(e){
+    e.preventDefault();
+
+    const commitChanges = await fetch("/rollback")
+      .then((response) => response.json())
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
+  async function ExportCSV(e){
+    e.preventDefault();
+    let navigate = useNavigate(); 
+    console.log("export csv button clicked");
+
+    const routeChange = () =>{ 
+      let path = `newPath`; 
+      navigate(path);
+    }
+    navigate("https://youtube.com");
+
+    // const exportCSV = await fetch("/export")
+    //   .then((response) => response.json())
+    //   .catch((error) => {
+    //     console.log(error);
+    //   });
+  }
 
   async function saveRoute (e) {
     e.preventDefault();
-    console.log("test")
 
     var originLocationId;
     var destinationLocationId;
@@ -304,6 +341,38 @@ const Map = () => {
               onClick={clearRoute}
             /> */}
           </ButtonGroup>
+          
+          {/* COMMIT BUTTON */}
+          <ButtonGroup>
+            <Button
+              type="submit"
+              className="submitButton"
+              onClick={commit}
+            >
+              Commit 
+            </Button>
+            {/* <IconButton
+              aria-label="center back"
+              title="close"
+              onClick={clearRoute}
+            /> */}
+          </ButtonGroup>
+
+          {/* UNDO BUTTON */}
+          <ButtonGroup>
+            <Button
+              type="submit"
+              className="submitButton"
+              onClick={undo}
+            >
+              Undo
+            </Button>
+            {/* <IconButton
+              aria-label="center back"
+              title="close"
+              onClick={clearRoute}
+            /> */}
+          </ButtonGroup>
 
         </Flex>
 
@@ -323,8 +392,10 @@ const Map = () => {
               map.setZoom(15);
             }}
           /> */}
+          
         </Flex>
         <h1>{originReview}</h1>
+        <Button><a href="http://localhost:5001/export">Export to CSV </a> </Button>
       </Box>
     </Flex>
   ) : (
