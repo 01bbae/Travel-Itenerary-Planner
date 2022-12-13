@@ -4,6 +4,7 @@ const YelpData = require("./response.json");
 const mysql = require("mysql2");
 const express = require("express");
 var bodyParser = require("body-parser");
+var data_exporter = require('json2csv').Parser;
 
 const app = express();
 var jsonParser = bodyParser.json();
@@ -133,19 +134,47 @@ app.post("/create-route", jsonParser, async (req, res) => {
     console.log("Destination: ", destination);
     console.log("Type: ", type);
 
-    con.query(
-      `
-      INSERT INTO route (origin, destination, type)
-      VALUES (?)`,
-      [[origin, destination, type]]
-    );
+    con.beginTransaction(function(err) {
+      if (err) { throw err; }
+        con.query(
+          `
+          INSERT INTO route (origin, destination, type)
+          VALUES (?)`,
+          [[origin, destination, type]]
+        );
+    });
 
+    console.log("Added route to the queue. Either click the commit/undo button to add/remove it from the queue.");
     res.status(200).json("Success");
   } catch (err) {
     res.status(500).json(err);
     console.log("ERROR");
   }
 });
+
+app.get("/rollback", jsonParser, async (req, res) => {
+  try {
+    con.rollback();
+    console.log("Successfully rollbacked");
+    res.status(200).json("Success");
+  } catch (err) {
+    res.status(500).json(err);
+    console.log("Error with getting the route");
+  }
+});
+
+app.get("/commit", jsonParser, async (req, res) => {
+  try {
+    con.commit();
+    res.status(200).json("Successfully committed");
+    console.log("Succesfully committed");
+  } catch (err) {
+    res.status(500).json(err);
+    console.log("Error with getting the route");
+  }
+});
+
+
 
 // Getting a route given id in parameter
 app.get("/get-route/:id", jsonParser, async (req, res) => {
@@ -319,6 +348,29 @@ app.post("/login", jsonParser, async (req, res) => {
     console.log(err);
   }
 });
+
+// Export functionality
+app.get('/export', function(request, response, next){
+  con.query('SELECT * FROM route', function(error, data){
+
+    var mysql_data = JSON.parse(JSON.stringify(data));
+    //convert JSON to CSV Data
+    var file_header = ['route_id', 'origin', 'destination', 'type'];
+
+    var json_data = new data_exporter({file_header});
+
+    var csv_data = json_data.parse(mysql_data);
+
+    response.setHeader("Content-Type", "text/csv");
+
+    response.setHeader("Content-Disposition", "attachment; filename=routes.csv");
+
+    response.status(200).end(csv_data);
+
+  });
+
+});
+
 
 /* --------------------------------------------------------------------------------------- */
 
