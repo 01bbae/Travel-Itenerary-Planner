@@ -237,6 +237,7 @@ const Map = () => {
     
     
   }
+  
   function clearRoute() {
     setDirectionsResponse(null);
     setDistance("");

@@ -3,8 +3,8 @@ dotenv.config();
 const YelpData = require("./response.json");
 const mysql = require("mysql2");
 const express = require("express");
-var bodyParser = require("body-parser");
-var data_exporter = require('json2csv').Parser;
+const bodyParser = require("body-parser");
+// const data_exporter = require('json2csv').Parser;
 
 const app = express();
 var jsonParser = bodyParser.json();
