@@ -1,9 +1,9 @@
 import React from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Login.css";
+import "./Register.css";
 
-const Login = (props) => {
+const Register = (props) => {
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
 
@@ -11,14 +11,14 @@ const Login = (props) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    let loginObj = {};
-    loginObj.username = email;
-    loginObj.password = pass;
-    console.log(loginObj);
-    fetch("/login", {
+    let registerObj = {};
+    registerObj.username = email;
+    registerObj.password = pass;
+    console.log(registerObj);
+    fetch("/register", {
       method: "POST",
       mode: "cors",
-      body: JSON.stringify(loginObj),
+      body: JSON.stringify(registerObj),
       headers: {
         "Content-type": "application/json; charset=UTF-8",
       },
@@ -29,10 +29,6 @@ const Login = (props) => {
       })
       .then((data) => {
         console.log(data);
-        if (data.login) {
-          console.log(`logged in as userID: ${data.userID}`);
-          props.sendUserID(data.userID);
-        }
       })
       .catch((err) => {
         console.log(err);
@@ -41,7 +37,7 @@ const Login = (props) => {
 
   return (
     <div className="auth-form-container">
-      <h2>Login</h2>
+      <h2>Register</h2>
       <form className="login-form" onSubmit={handleSubmit}>
         <label htmlFor="email" className="label">
           Email
@@ -68,19 +64,19 @@ const Login = (props) => {
           name="password"
         />
         <button type="submit" className="button">
-          Login
+          Register
         </button>
       </form>
       <button
         className="button"
         onClick={() => {
-          navigate("/register");
+          navigate("/login");
         }}
       >
-        Don't have an account? Register here.
+        Already have an account? Log in here.
       </button>
     </div>
   );
 };
 
-export default Login;
+export default Register;

@@ -42,6 +42,7 @@ con.connect((err) => {
 //   // con.query('USE travel');
 //   console.log("Database travel created!")
 // }
+
 const createTables = () => {
   // using backticks for template literals
   con.query(`CREATE TABLE IF NOT EXISTS user(
@@ -81,6 +82,12 @@ const createTables = () => {
   console.log("Created tables");
 };
 
+createTables();
+
+const handleLogin = async (username, password) => {
+  try {
+  } catch (err) {}
+};
 // const addUserAndMap = (username, password) => {
 //   con.query(`
 //   delimiter $$
@@ -95,24 +102,23 @@ const createTables = () => {
 //   delimiter ;
 //   `);
 // };
-createTables();
 
-function insertBusinessInDatabase(){
-  YelpData.businesses.forEach((element, index) => {
-    locationName = YelpData.businesses[index].name;
-    locationAlias = YelpData.businesses[index].alias;
-    locationAddress = YelpData.businesses[index].location["full_address"];
+// function insertBusinessInDatabase(){
+//   YelpData.businesses.forEach((element, index) => {
+//     locationName = YelpData.businesses[index].name;
+//     locationAlias = YelpData.businesses[index].alias;
+//     locationAddress = YelpData.businesses[index].location["full_address"];
 
-    con.query(`
-      INSERT INTO location (name, alias, address)
-      VALUES (?)`, [[locationName, locationAlias, locationAddress]]);
+//     con.query(`
+//       INSERT INTO location (name, alias, address)
+//       VALUES (?)`, [[locationName, locationAlias, locationAddress]]);
 
-  });
-  
-  console.log("Inserted locations into database");
-}
+//   });
 
-insertBusinessInDatabase();
+//   console.log("Inserted locations into database");
+// }
+
+// insertBusinessInDatabase();
 
 /* -------------------------API INTEGRATION----------------------------------------------- */
 
@@ -170,14 +176,13 @@ app.get("/get-location-id/:locationAlias", jsonParser, async (req, res) => {
                 WHERE alias = ?;`,
       req.params.locationAlias,
       function (err, results) {
-        if (err) 
-        {
+        if (err) {
           console.log(err);
           res.sendStatus(500);
           return;
         }
         res.status(200).send({
-          location_id: results
+          location_id: results,
         });
       }
     );
@@ -189,27 +194,30 @@ app.get("/get-location-id/:locationAlias", jsonParser, async (req, res) => {
   }
 });
 
-app.get("/get-location-address/:locationAlias", jsonParser, async (req, res) => {
-  try {
-    console.log(req.params.id);
-    con.query(
-      `SELECT address FROM location
+app.get(
+  "/get-location-address/:locationAlias",
+  jsonParser,
+  async (req, res) => {
+    try {
+      console.log(req.params.id);
+      con.query(
+        `SELECT address FROM location
                 WHERE alias = ?;`,
-      req.params.locationAlias,
-      function (err, results) {
-        if (err) throw err;
-        console.log(results);
-        res.status(200).send({
-          address: results
-        });
-      }
-    );
-
-  } catch (err) {
-    res.status(500).json(err);
-    console.log("Error with getting the route");
+        req.params.locationAlias,
+        function (err, results) {
+          if (err) throw err;
+          console.log(results);
+          res.status(200).send({
+            address: results,
+          });
+        }
+      );
+    } catch (err) {
+      res.status(500).json(err);
+      console.log("Error with getting the route");
+    }
   }
-});
+);
 
 // Delete a route given id in parameter
 app.delete("/delete-route/:id", jsonParser, async (req, res) => {
@@ -266,7 +274,7 @@ app.post("/register", jsonParser, (req, res) => {
 });
 
 // Login Functionality
-app.post("/login", jsonParser, (req, res) => {
+app.post("/login", jsonParser, async (req, res) => {
   try {
     console.log(req.body);
     const username = req.body.username;
@@ -277,30 +285,35 @@ app.post("/login", jsonParser, (req, res) => {
       throw "Unsuccessful post from frontend: value(s) null.";
     }
 
+    // query for matching username and password and return user_id (if exists) and count of matching users
     con.query(
       `
-      SELECT COUNT(*) AS Count FROM user
+      SELECT user_id, COUNT(*) AS Count FROM user
       WHERE username = ${mysql.escape(username)} AND password = ${mysql.escape(
         password
       )}`,
-      (err, res, fields) => {
-        console.log(res);
+      (err, result, fields) => {
+        console.log(result);
         if (err) {
           throw err;
         }
-        if (res[0].Count > 0) {
-          login = true;
+        if (result[0].Count > 0) {
           console.log("login successful");
+          return res
+            .status(200)
+            .json({ login: true, userID: result[0].user_id });
         } else {
           console.log("login failed");
+          return res.status(400).json({ login: false });
         }
       }
     );
-    if (login) {
-      return res.status(200).json({ login: true });
-    } else {
-      return res.status(400).json({ login: false });
-    }
+    // console.log(login);
+    // if (login) {
+    //   return res.status(200).json({ login: true });
+    // } else {
+    //   return res.status(400).json({ login: false });
+    // }
   } catch (err) {
     console.log("ERROR: unable to log in");
     console.log(err);
