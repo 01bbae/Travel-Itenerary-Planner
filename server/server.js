@@ -1,9 +1,10 @@
-const dotenv = require("dotenv");
+import dotenv from "dotenv";
 dotenv.config();
-const YelpData = require("./response.json");
-const mysql = require("mysql2");
-const express = require("express");
-const bodyParser = require("body-parser");
+import YelpData from "./response.json" assert { type: "json" };
+import mysql from "mysql2";
+import express from "express";
+import bodyParser from "body-parser";
+import RegisterException from "./exceptions/RegisterException.mjs";
 // const data_exporter = require('json2csv').Parser;
 
 const app = express();
@@ -85,10 +86,6 @@ const createTables = () => {
 
 createTables();
 
-const handleLogin = async (username, password) => {
-  try {
-  } catch (err) {}
-};
 // const addUserAndMap = (username, password) => {
 //   con.query(`
 //   delimiter $$
@@ -284,18 +281,17 @@ app.post("/register", jsonParser, (req, res) => {
       `
       INSERT INTO user (username, password)
       VALUES (${mysql.escape(username)},${mysql.escape(password)})`,
-      (err, res, fields) => {
+      (err, result, fields) => {
         if (err) {
           if (err.code == "ER_DUP_ENTRY") {
             throw "Account already exists";
           }
           throw err;
         }
-        console.log(res);
+        console.log(result);
+        return res.status(200).json({ success: true });
       }
     );
-
-    return res.status(200).json({ success: true });
   } catch (err) {
     console.log("ERROR");
     console.log(err);
