@@ -89,22 +89,20 @@ createTables();
 
 
 // PROCEDURE CREATED IN DATAGRIP
-// const createUserAndMapProcedure = () => {
-//   con.query(`
-//   delimiter $$
-//   CREATE Procedure addUserAndMap(IN username VARCHAR(20), IN password VARCHAR(20))
-//   BEGIN
-//     INSERT INTO user (username, password)
-//     VALUES (username, password);
-//     SELECT @lastID := LAST_INSERT_ID();
-//     INSERT INTO map (user_id)
-//     VALUES (@lastID);
-//   END$$
-//   delimiter ;
-//   `);
-// };
+const createUserAndMapProcedure = () => {
+  con.query(`
+  CREATE Procedure IF NOT EXISTS addUserAndMap(IN username VARCHAR(20), IN password VARCHAR(20))
+  BEGIN
+    INSERT INTO user (username, password)
+    VALUES (username, password);
+    SELECT @lastID := LAST_INSERT_ID();
+    INSERT INTO map (user_id)
+    VALUES (@lastID);
+  END
+  `);
+};
 
-// createUserAndMapProcedure();
+createUserAndMapProcedure();
 
 function insertBusinessInDatabase(){
   YelpData.businesses.forEach((element, index) => {
