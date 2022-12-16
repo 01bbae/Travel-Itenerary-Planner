@@ -283,7 +283,7 @@ app.get("/get-user-mapID/user_id=:user_id", jsonParser, async (req, res) => {
 });
 
 // Get location ID for a given location alias
-app.get("/location/location_alias=:location_alias", jsonParser, async (req, res) => {
+app.get("/location/id/location_alias=:location_alias", jsonParser, async (req, res) => {
   try {
     console.log(req.params.location_alias);
     con.query(
@@ -302,22 +302,20 @@ app.get("/location/location_alias=:location_alias", jsonParser, async (req, res)
   }
 });
 
-// Get location address from location alias
-app.get("/location/location_alias=:location_alias",
-  jsonParser,
-  async (req, res) => {
+// Get location name from location alias
+app.get("/location/name/location_alias=:location_alias", jsonParser, async (req, res) => {
     try {
-      console.log(req.params.location_alias);
+      if (req.params.location_alias == null){
+        throw "location alias is null";
+      }
       con.query(
-        `SELECT address FROM location
+        `SELECT name FROM location
                 WHERE alias = ?;`,
         req.params.location_alias,
         function (err, results) {
           if (err) throw err;
-          console.log(results);
-          return res.status(200).json({
-            address: results,
-          });
+          console.log("location name " + results[0]);
+          return res.status(200).json(results[0]);
         }
       );
     } catch (err) {
@@ -327,6 +325,7 @@ app.get("/location/location_alias=:location_alias",
   }
 );
 
+// Get reviews from location ID
 app.get("/location/reviews/location_id=:location_id", jsonParser, async (req, res) => {
   try {
     if (req.params.location_id == null){

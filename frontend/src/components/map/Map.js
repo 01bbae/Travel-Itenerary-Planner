@@ -24,6 +24,8 @@ const center = { lat: 33.79, lng: -117.85 };
 const Map = (props) => {
   const [origin, setOrigin] = useState();
   const [destination, setDestination] = useState();
+  const [originName, setOriginName] = useState();
+  const [destinationName, setDestinationName] = useState();
   const [mode, setMode] = useState();
   const [loading, setLoading] = useState(true);
   const [originReview, setOriginReview] = useState([]);
@@ -46,7 +48,7 @@ const Map = (props) => {
     try {
       // Exchange Location Name for Location ID
       const response1 = await fetch(
-        `/location/location_alias=${e.target.value}`,
+        `/location/id/location_alias=${e.target.value}`,
         {
           method: "GET",
           mode: "cors",
@@ -83,7 +85,7 @@ const Map = (props) => {
     let destination_id;
     try {
       // Exchange Location Name for Location ID
-      const response1 = await fetch(`/location/location_alias=${newDest}`, {
+      const response1 = await fetch(`/location/id/location_alias=${newDest}`, {
         method: "GET",
         mode: "cors",
         headers: {
@@ -113,8 +115,30 @@ const Map = (props) => {
   };
 
   useEffect(() => {
-    console.log(destinationReview);
-  }, [destinationReview]);
+    fetch(`/location/name/location_alias=${origin}`, {
+      method: "GET",
+      mode: "cors",
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+      },
+    })
+    .then((res) => res.json())
+    .then((data) => setOriginName(data.name))
+    .catch((err) => console.log(err))
+  }, [origin]);
+
+  useEffect(() => {
+    fetch(`/location/name/location_alias=${destination}`, {
+      method: "GET",
+      mode: "cors",
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+      },
+    })
+    .then((res) => res.json())
+    .then((data) => setDestinationName(data.name))
+    .catch((err) => console.log(err))
+  }, [destination]);
 
   const mapOptions = {
     zoom: 15,
@@ -438,7 +462,7 @@ const Map = (props) => {
         </Button>
         <Flex className="reviewBox" direction='column'>
           <Box flex='1'>
-            <Box>Reviews for Origin</Box>
+            <Box>{ origin!=null ? <div> Reviews for {originName} </div>: null}</Box>
             <ol>
               {originReview.map((element, index) => {
                   return <li>{element.review}</li>;
@@ -446,7 +470,7 @@ const Map = (props) => {
             </ol>
           </Box>
           <Box flex='1'>
-            <Box>Reviews for Destination</Box>
+            <Box>{ destination!=null ? <div> Reviews for {destinationName} </div>: null}</Box>
             <ol>
             {destinationReview.map((element, index) => {
                 return <li>{element.review}</li>;
