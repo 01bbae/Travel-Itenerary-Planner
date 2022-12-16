@@ -4,7 +4,8 @@ import YelpData from "./response.json" assert { type: "json" };
 import mysql from "mysql2";
 import express from "express";
 import bodyParser from "body-parser";
-import RegisterException from "./exceptions/RegisterException.mjs";
+import e from "express";
+// import RegisterException from "./exceptions/RegisterException.mjs";
 // const data_exporter = require('json2csv').Parser;
 
 const app = express();
@@ -58,20 +59,20 @@ const createTables = () => {
     alias VARCHAR(100) NOT NULL,
     address VARCHAR(100) NOT NULL
   )`);
+  con.query(`CREATE TABLE IF NOT EXISTS map(
+    map_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES user(user_id)
+  )`);
   con.query(`CREATE TABLE IF NOT EXISTS route(
     route_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     origin INT NOT NULL,
     destination INT NOT NULL,
     type VARCHAR(20) NOT NULL,
+    map_id INT NOT NULL,
     FOREIGN KEY (origin) REFERENCES location(location_id),
-    FOREIGN KEY (destination) REFERENCES location(location_id)
-  )`);
-  con.query(`CREATE TABLE IF NOT EXISTS map(
-    map_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    route_id INT,
-    FOREIGN KEY (user_id) REFERENCES user(user_id),
-    FOREIGN KEY (route_id) REFERENCES route(route_id)
+    FOREIGN KEY (destination) REFERENCES location(location_id),
+    FOREIGN KEY (map_id) REFERENCES map(map_id)
   )`);
   con.query(`CREATE TABLE IF NOT EXISTS review(
     review_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -86,13 +87,15 @@ const createTables = () => {
 
 createTables();
 
-// const addUserAndMap = (username, password) => {
+
+// PROCEDURE CREATED IN DATAGRIP
+// const createUserAndMapProcedure = () => {
 //   con.query(`
 //   delimiter $$
-//   CREATE Procedure addUserAndMap()
+//   CREATE Procedure addUserAndMap(IN username VARCHAR(20), IN password VARCHAR(20))
 //   BEGIN
-//     INSERT INTO user (user_username, user_password)
-//     VALUES (${username}, ${password});
+//     INSERT INTO user (username, password)
+//     VALUES (username, password);
 //     SELECT @lastID := LAST_INSERT_ID();
 //     INSERT INTO map (user_id)
 //     VALUES (@lastID);
@@ -101,43 +104,51 @@ createTables();
 //   `);
 // };
 
-// function insertBusinessInDatabase(){
-//   YelpData.businesses.forEach((element, index) => {
-//     locationName = YelpData.businesses[index].name;
-//     locationAlias = YelpData.businesses[index].alias;
-//     locationAddress = YelpData.businesses[index].location["full_address"];
+// createUserAndMapProcedure();
 
-//     con.query(`
-//       INSERT INTO location (name, alias, address)
-//       VALUES (?)`, [[locationName, locationAlias, locationAddress]]);
+function insertBusinessInDatabase(){
+  YelpData.businesses.forEach((element, index) => {
+    let locationName = element.name;
+    let locationAlias = element.alias;
+    let locationAddress = element.location["full_address"];
 
-//   });
+    con.query(`
+      INSERT INTO location (name, alias, address)
+      VALUES (?)`, [[locationName, locationAlias, locationAddress]]);
 
-//   console.log("Inserted locations into database");
-// }
+  });
 
+  console.log("Inserted locations into database");
+}
+// ONLY RUN ONCE TO INSERT LOCATIONS
 // insertBusinessInDatabase();
 
 /* -------------------------API INTEGRATION----------------------------------------------- */
 
-// Creating a route
-app.post("/create-route", jsonParser, async (req, res) => {
+// Creating a route for user_id
+app.post("/route/", jsonParser, async (req, res) => {
   try {
     const origin = req.body.origin;
     const destination = req.body.destination;
     const type = req.body.type;
+    const map_id = req.body.map_id;
+    
+    if (map_id == null){
+      throw "MapID is null in /route/";
+    }
 
     console.log("Origin: ", origin);
     console.log("Destination: ", destination);
     console.log("Type: ", type);
+    console.log("map_id: ", map_id);
 
     con.beginTransaction(function(err) {
       if (err) { throw err; }
         con.query(
           `
-          INSERT INTO route (origin, destination, type)
+          INSERT INTO route (origin, destination, type, map_id)
           VALUES (?)`,
-          [[origin, destination, type]]
+          [[origin, destination, type, map_id]]
         );
     });
 
@@ -171,26 +182,78 @@ app.get("/commit", jsonParser, async (req, res) => {
   }
 });
 
-
-
-// Getting a route given id in parameter
-app.get("/get-route/:id", jsonParser, async (req, res) => {
+// Getting a route given userID
+app.get("/route/user_id=:user_id", jsonParser, async (req, res) => {
   try {
-    console.log(req.params.id);
-    con.query(
-      `SELECT * FROM route
-                WHERE route_id = ?;`,
-      req.params.id,
-      function (err, results) {
-        if (err) throw err;
-        console.log(results);
-      }
-    );
-
-    res.status(200).json("Success");
+    if (req.params.user_id != null) {
+      console.log("GETTING Route given USERID ")
+      con.query(
+        `SELECT route_id, l1.location_id AS origin_id, l1.name AS origin_name,l2.location_id AS destination_id, l2.name AS destination_name
+        FROM (((user INNER JOIN map ON user.user_id = map.user_id)
+            INNER JOIN route ON map.map_id = route.map_id)
+            INNER JOIN location AS l1 ON l1.location_id = route.origin)
+            INNER JOIN location AS l2 ON l2.location_id = route.destination
+        WHERE user.user_id = ?;`,
+        req.params.user_id,
+        function (err, results) {
+          if (err) throw err;
+          console.log(results);
+          return res.status(200).json(results);
+        }
+      );
+    }else{
+      throw "NULL user_id"
+    }
   } catch (err) {
-    res.status(500).json(err);
     console.log("Error with getting the route");
+    console.log(err);
+    return res.status(500).json(err);
+  }
+});
+
+app.delete("/route/map_id=:map_id/route_id=:route_id", jsonParser, async (req, res) => {
+  try{
+    console.log("Deleting Route from User")
+      con.query(
+        `DELETE FROM route
+        WHERE map_id = ? AND route_id = ?;`,
+        [req.params.map_id, req.params.route_id],
+        function (err, results) {
+          if (err) throw err;
+          console.log(results);
+          return res.status(200).json(results);
+        }
+      );
+
+  }catch(err){
+    console.log(err);
+
+  }
+})
+
+// Getting a map givenn userid
+app.get("/get-user-mapID/user_id=:user_id", jsonParser, async (req, res) => {
+  try {
+    if (req.params.user_id != null) {
+      console.log("Getting MAP ID OF USER");
+      con.query(
+        `SELECT map_id
+        FROM map
+        WHERE user_id = ?;`,
+        req.params.user_id,
+        function (err, results) {
+          if (err) throw err;
+          console.log(results);
+          return res.status(200).json(results[0]);
+        }
+      );
+    }else{
+      throw "NULL user_id"
+    }
+  } catch (err) {
+    console.log("Error with getting the route");
+    console.log(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -245,31 +308,30 @@ app.get(
   }
 );
 
-// Delete a route given id in parameter
-app.delete("/delete-route/:id", jsonParser, async (req, res) => {
-  try {
-    console.log(req.params.id);
-    con.query(
-      `DELETE FROM route
-                WHERE route_id = ?;`,
-      req.params.id,
-      function (err, results) {
-        if (err) throw err;
-        console.log(results);
-      }
-    );
+// // Delete a route given id in parameter
+// app.delete("/delete-route/:id", jsonParser, async (req, res) => {
+//   try {
+//     console.log(req.params.id);
+//     con.query(
+//       `DELETE FROM route
+//                 WHERE route_id = ?;`,
+//       req.params.id,
+//       function (err, results) {
+//         if (err) throw err;
+//         console.log(results);
+//       }
+//     );
 
-    res.status(500).json("Success");
-  } catch (err) {
-    res.status(500).json(err);
-    console.log("Error with deleting the route");
-  }
-});
+//     res.status(500).json("Success");
+//   } catch (err) {
+//     res.status(500).json(err);
+//     console.log("Error with deleting the route");
+//   }
+// });
 
 // Register new Account
 app.post("/register", jsonParser, (req, res) => {
   try {
-    console.log(req.body);
     const username = req.body.username;
     const password = req.body.password;
 
@@ -279,12 +341,11 @@ app.post("/register", jsonParser, (req, res) => {
 
     con.query(
       `
-      INSERT INTO user (username, password)
-      VALUES (${mysql.escape(username)},${mysql.escape(password)})`,
+      CALL addUserAndMap(${mysql.escape(username)}, ${mysql.escape(password)})`,
       (err, result, fields) => {
         if (err) {
           if (err.code == "ER_DUP_ENTRY") {
-            throw "Account already exists";
+            return res.status(300).json({ success: false, exists: true });
           }
           throw err;
         }
@@ -295,6 +356,7 @@ app.post("/register", jsonParser, (req, res) => {
   } catch (err) {
     console.log("ERROR");
     console.log(err);
+    return res.status(300).json({ success: false, exists: false });
   }
 });
 

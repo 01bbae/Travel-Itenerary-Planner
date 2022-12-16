@@ -8,20 +8,45 @@ import Login from "./components/login/Login";
 import Register from "./components/register/Register";
 import RouteSaved from "./components/routesaved/RouteSaved";
 
+import response from "./response.json";
+
+
 const App = () => {
   const [userID, setUserID] = useState(null);
   useEffect(() => {
     console.log("From Parent Component: User ID is " + userID);
-    // return () => {
-    //   second;
-    // };
   }, [userID]);
+
+
+  const createLocationDropdown = () => {
+    let locationDropdown = [];
+    response.businesses.map((element, index) => {
+      locationDropdown.push(
+        <option id={index} value={element.alias}>
+          {element.name}
+        </option>
+      );
+    });
+    return locationDropdown;
+  };
+
+  const createModesDropdown = () => {
+    let modesDropdown = [];
+    var modeArrNames = ["DRIVING", "TRANSIT"]
+    modeArrNames.map((element, index) =>
+      modesDropdown.push( 
+      <option id={index} value={element}>
+        {element}
+      </option> 
+    ));
+    return modesDropdown;
+  };
 
   return (
     <div>
       <Navbar />
       <Routes>
-        <Route path="/" element={<Map />} />
+        <Route path="/" element={<Map createLocationDropdown={createLocationDropdown} createModesDropdown={createModesDropdown} userID={userID}/>} />
         <Route
           path="/login"
           element={
@@ -33,7 +58,7 @@ const App = () => {
           }
         />
         <Route path="/register" element={<Register />} />
-        <Route path="/routes" element={<RouteSaved />} />
+        <Route path="/routes" element={<RouteSaved createLocationDropdown={createLocationDropdown} createModesDropdown={createModesDropdown} userID={userID}/>} />
       </Routes>
     </div>
   );

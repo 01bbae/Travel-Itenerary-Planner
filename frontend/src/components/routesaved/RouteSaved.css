@@ -1,0 +1,15 @@
+.routeElements{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.EditDropdown{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    background-color: lightcoral;
+    padding: 1rem;
+}

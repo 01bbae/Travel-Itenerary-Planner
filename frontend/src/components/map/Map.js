@@ -1,39 +1,34 @@
 import React from "react";
 import { useState, useEffect, useRef } from "react";
-import {
-  GoogleMapProvider,
-  userGoogleMap,
-} from "@ubilabs/google-maps-react-hooks";
+// import {
+//   GoogleMapProvider,
+//   userGoogleMap,
+// } from "@ubilabs/google-maps-react-hooks";
 import {
   Box,
   Button,
   ButtonGroup,
   Flex,
-  HStack,
-  IconButton,
-  Input,
-  SkeletonText,
   Text,
   Select,
 } from "@chakra-ui/react";
 import {
   GoogleMap,
-  userLoadScript,
   Marker,
-  useLoadScript,
-  Autocomplete,
   DirectionsRenderer,
   useJsApiLoader,
-  Polyline,
+  // Polyline,
+  // userLoadScript,
+  // useLoadScript,
+  // Autocomplete,
 } from "@react-google-maps/api";
 import "./Map.css";
-import response from "../../response.json";
 import { useNavigate } from "react-router-dom";
 
 // Initialize center
 const center = { lat: 33.79, lng: -117.85 };
 
-const Map = () => {
+const Map = (props) => {
   // const [ libraries ] = useState(['places']);
 
   // delete refs later
@@ -51,8 +46,8 @@ const Map = () => {
   const [directionsResponse, setDirectionsResponse] = useState(null);
   const [distance, setDistance] = useState("");
   const [duration, setDuration] = useState("");
-  const [calculated, setCalculated] = useState(false);
-  const [mapContainer, setMapContainer] = useState(null);
+  // const [calculated, setCalculated] = useState(false);
+  // const [mapContainer, setMapContainer] = useState(null);
 
   const mapOptions = {
     zoom: 15,
@@ -63,35 +58,12 @@ const Map = () => {
   };
   
 
-  const createDropdown = () => {
-    let dropdown = [];
-    response.businesses.forEach((element, index) => {
-      dropdown.push(
-        <option id={index} value={element.alias}>
-          {element.name}
-        </option>
-      );
-    });
-    return dropdown;
-  };
-
-  const createDropdownModes = () => {
-    let dropdownModes = [];
-    var modeArrNames = ["DRIVE", "TRANSIT"]
-    for (let i = 0; i < modeArrNames.length; ++i){
-      dropdownModes.push(
-        <option id={modeArrNames[i]} value={modeArrNames[i]}>{modeArrNames[i]}</option>);
-    }
-    // dropdownModes.push(
-    //   <option id="test1" value={"DRIVE"}></option>
-
-    // )
-    return dropdownModes;
-  };
 
   async function commit(e){
     e.preventDefault();
-
+    if (props.userID == null){
+      throw "Cannot Commit Route: No User Logged In"
+    }
     const commitChanges = await fetch("/commit")
       .then((response) => response.json())
       .catch((error) => {
@@ -101,7 +73,9 @@ const Map = () => {
 
   async function undo(e){
     e.preventDefault();
-
+    if (props.userID == null){
+      throw "Cannot Commit Route: No User Logged In"
+    }
     const commitChanges = await fetch("/rollback")
       .then((response) => response.json())
       .catch((error) => {
@@ -129,68 +103,88 @@ const Map = () => {
 
   async function saveRoute (e) {
     e.preventDefault();
+    try {
+      if (props.userID == null){
+        throw "Cannot Save Route: No Logged In User";
+      }
 
-    var originLocationId;
-    var destinationLocationId;
-    const originLocationID_obj = await fetch("/get-location-id/" + origin)
-      .then((response) => response.json())
-      .then((responseJson) => {
-        originLocationId = responseJson.location_id[0];
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+      let routeObj = {};
 
-      const destinationLocationID_obj = await fetch("/get-location-id/" + destination)
-      .then((response) => response.json())
-      .then((responseJson) => {
-        destinationLocationId = responseJson.location_id[0];
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-
-      console.log(originLocationId.location_id);
-      console.log(destinationLocationId.location_id);
-    
-
-    let routeObj = new Object();
-
-    routeObj.origin = originLocationId.location_id;
-    routeObj.destination = destinationLocationId.location_id;
-    routeObj.type = mode;
-
-    console.log(routeObj);
-      fetch("/create-route", {
-        method: "POST",
-        mode: "cors",
-        body: JSON.stringify(routeObj),
-        headers: {
-          "Content-type": "application/json; charset=UTF-8",
-        },
-      })
-        .then((res) => {
-          console.log(res.status);
-          res.json();
+      await fetch("/get-location-id/" + origin)
+        .then((response) => response.json())
+        .then((responseJson) => {
+          routeObj.origin = responseJson.location_id[0].location_id;
         })
-        .then((data) => {
-          console.log(data);
-        })
-        .catch((err) => {
-          console.log(err);
+        .catch((error) => {
+          console.log(error);
         });
+  
+      await fetch("/get-location-id/" + destination)
+        .then((response) => response.json())
+        .then((responseJson) => {
+          routeObj.destination = responseJson.location_id[0].location_id;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      await fetch(`/get-user-mapID/user_id=${props.userID}`, {
+          method: "GET",
+          mode: "cors",
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+          }
+        })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("MAPID is "+ data.map_id);
+          routeObj.map_id = data.map_id;
+        })
+        .catch((error) => {
+          console.log("ERROR IN FETCHING MAPID FROM USERID: " + error);
+        });
+  
+        console.log(routeObj);
+        
+      routeObj.type = mode;
+  
+      console.log(routeObj);
+        fetch("/route/", {
+          method: "POST",
+          mode: "cors",
+          body: JSON.stringify(routeObj),
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+          },
+        })
+          .then((res) => {
+            console.log(res.status);
+            res.json();
+          })
+          .then((data) => {
+            console.log(data);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+    }catch (err) {
+      console.log(err);
+
+    }
   }
 
   async function calculateRoute() {
     // dont forget to add if route is calculated, create button to save route (just set "calculated" to true)
+    if (origin == null || destination == null || mode == null){
+      throw "Origin or Destination is null. Please Try Again."
+    }
     console.log("Origin: ", origin);
     console.log("Destination: ", destination);
-
     var originAddr;
     var destinationAddr;
 
     // get origin address through api
-    const originAddress = await fetch("/get-location-address/" + origin)
+    await fetch("/get-location-address/" + origin)
       .then((response) => response.json())
       .then((responseJson) => {
 
@@ -201,7 +195,7 @@ const Map = () => {
       });
 
       // get destination address through api
-      const destinationAddress = await fetch("/get-location-address/" + destination)
+      await fetch("/get-location-address/" + destination)
       .then((response) => response.json())
       .then((responseJson) => {
 
@@ -225,7 +219,7 @@ const Map = () => {
       origin: originAddr.address,
       destination: destinationAddr.address,
       // eslint-disable-next-line no-undef
-      travelMode: google.maps.TravelMode.TRANSIT,
+      travelMode: mode,
       // waypoints: [{ stopover: true, location: { placeId: "ChIJRVj1dgPP20YRBWB4A_sUx_Q" } }],
       provideRouteAlternatives: true,
     });
@@ -280,7 +274,7 @@ const Map = () => {
           {/* Input for origin */}
           <Box>
             <Select className="dropdown" id="originDropdown" value = {origin} onChange={(e) => setOrigin(e.target.value)} placeholder="Select Origin">
-              {createDropdown()}
+              {props.createLocationDropdown()}
             </Select>
           </Box>
           {/* <Autocomplete>
@@ -290,15 +284,15 @@ const Map = () => {
           {/* Input for Destination */}
           <Box>
           <Select className="dropdown" id="destinationDropdown" value = {destination} onChange={(e) => setDestination(e.target.value)} placeholder="Select Destination">
-              {createDropdown()}
+              {props.createLocationDropdown()}
             </Select>
           </Box>
 
 
           {/* DROPDOWN MODES (Driving, Transit) */}
           <Box>
-          <Select className="dropdown" id="modeDropdown" value = {mode} onChange={(e) => setMode(e.target.value)} placeholder="Select Mode">
-              {createDropdownModes()}
+          <Select className="dropdown" id="modeDropdown" value = {mode} onChange={(e) => {setMode(e.target.value); console.log(mode)}} placeholder="Select Mode">
+              {props.createModesDropdown()}
             </Select>
           </Box>
 
@@ -320,11 +314,6 @@ const Map = () => {
             >
               Calculate Route
             </Button>
-            {/* <IconButton
-              aria-label="center back"
-              title="close"
-              onClick={clearRoute}
-            /> */}
           </ButtonGroup>
           
           {/* SAVE ROUTE BUTTON */}
@@ -336,11 +325,6 @@ const Map = () => {
             >
               Save Route 
             </Button>
-            {/* <IconButton
-              aria-label="center back"
-              title="close"
-              onClick={clearRoute}
-            /> */}
           </ButtonGroup>
           
           {/* COMMIT BUTTON */}
@@ -378,23 +362,15 @@ const Map = () => {
         </Flex>
 
         {/* Displaying output (Distance and Duration) */}
-        <Flex className="outputBox">
+        {/* <Flex className="outputBox">
           <Box>
             <Text>Distance: {distance} </Text>
           </Box>
           <Box>
             <Text>Duration: {duration} </Text>
           </Box>
-          {/* <IconButton
-            aria-label="center back"
-            isRound
-            onClick={() => {
-              map.panTo(center);
-              map.setZoom(15);
-            }}
-          /> */}
-          
-        </Flex>
+        </Flex> */}
+
         <h1>{originReview}</h1>
         <Button><a href="http://localhost:5001/export">Export to CSV </a> </Button>
       </Box>

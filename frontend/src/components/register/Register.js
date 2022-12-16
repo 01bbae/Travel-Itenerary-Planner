@@ -6,6 +6,7 @@ import "./Register.css";
 const Register = (props) => {
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
+  const [response, setResponse] = useState("");
 
   const navigate = useNavigate();
 
@@ -28,7 +29,16 @@ const Register = (props) => {
         return res.json();
       })
       .then((data) => {
-        console.log(data);
+        // {success:true/false, exists: true/false}
+        if (data.success){
+          setResponse("Account Created!");
+        }else{
+          if (data.exists){
+            setResponse("Account Already Exists");
+          }else{
+            setResponse("Unknown Error: Please Try Again");
+          }
+        }
       })
       .catch((err) => {
         console.log(err);
@@ -67,6 +77,9 @@ const Register = (props) => {
           Register
         </button>
       </form>
+      <div>
+        {response}
+      </div>
       <button
         className="button"
         onClick={() => {

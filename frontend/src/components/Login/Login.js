@@ -30,7 +30,8 @@ const Login = (props) => {
       .then((data) => {
         console.log(data);
         if (data.login) {
-          console.log(`logged in as userID: ${data.userID}`);
+          console.log(`Logged in as userID: ${data.userID}`);
+          alert(`Logged in as userID: ${data.userID}`);
           props.sendUserID(data.userID);
         }
       })
