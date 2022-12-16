@@ -4,6 +4,9 @@ import "./RouteSaved.css"
 const RouteSaved = (props) => {
   const [routes, setRoutes] = useState([]);
   const [edit, setEdit] = useState(-1);
+  const [origin, setOrigin] = useState("");
+  const [destination, setDestination] = useState("");
+  const [travelMode, setTravelMode] = useState("");
   // const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -85,8 +88,94 @@ const RouteSaved = (props) => {
     }
   }
 
-  const handleRouteEdit = (e) => {
-    e.preventDefault();
+  const handleRouteEdit = async (event, route_id) => {
+    event.preventDefault();
+
+    let map_id;
+    // first fetch map_id from user_id
+    await fetch(`/get-user-mapID/user_id=${props.userID}`,{
+      method: "GET",
+      mode: "cors",
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data)
+        map_id = data.map_id
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+    // // Get origin_id from origin_name (Done in SQL Query backend)
+    // await fetch(`/get-user-mapID/user_id=${props.userID}`,{
+    //   method: "GET",
+    //   mode: "cors",
+    //   headers: {
+    //     "Content-type": "application/json; charset=UTF-8",
+    //   },
+    // })
+    //   .then((res) => res.json())
+    //   .then((data) => {
+    //     console.log(data)
+    //     map_id = data.map_id
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //   });
+    
+    // // Get destination_id from destination_name (Done in SQL Query backend)
+    // await fetch(`/get-user-mapID/user_id=${props.userID}`,{
+    //   method: "GET",
+    //   mode: "cors",
+    //   headers: {
+    //     "Content-type": "application/json; charset=UTF-8",
+    //   },
+    // })
+    //   .then((res) => res.json())
+    //   .then((data) => {
+    //     console.log(data)
+    //     map_id = data.map_id
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //   });
+
+    // Update route
+    await fetch(`/route/map_id=${map_id}/route_id=${route_id}`,{
+      method: "PUT",
+      mode: "cors",
+      body: JSON.stringify({origin: origin, destination: destination, travel_mode: travelMode}),
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data)
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+    // grab all routes including updated one
+    await fetch(`/route/user_id=${props.userID}`,{
+      method: "GET",
+      mode: "cors",
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data)
+        setRoutes(data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
   
   if (props.userID != null){
@@ -107,16 +196,19 @@ const RouteSaved = (props) => {
                   </div>
                 </div>
                 {(edit === index) && 
-                <form className="EditDropdown" onSubmit={(e) => handleRouteEdit(e)}>
-                  <select className="originDropdown">
+                <form className="EditDropdown" onSubmit={(event) => handleRouteEdit(event, element.route_id, event)}>
+                  <select className="originDropdown" onChange={(e) => setOrigin(e.target.value)} required>
+                    <option value="" disabled selected hidden>Choose Origin</option>
                     {props.createLocationDropdown()}
                   </select>
   
-                  <select className="destinationDropdown">
+                  <select className="destinationDropdown" onChange={(e) => setDestination(e.target.value)} required>
+                    <option value="" disabled selected hidden>Choose Destination</option>
                     {props.createLocationDropdown()}
                   </select>
   
-                  <select className="TravelMode">
+                  <select className="TravelMode" onChange={(e) => setTravelMode(e.target.value)} required>
+                    <option value="" disabled selected hidden>Choose Travel Mode</option>
                     {props.createModesDropdown()}
                   </select>
   
@@ -130,7 +222,7 @@ const RouteSaved = (props) => {
       </div>
       );
   }else{
-    return(<div> No User is Logged In </div>);
+    return(<div className="NoUser"> No User is Logged In </div>);
   }
 
 

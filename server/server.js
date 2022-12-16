@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import YelpData from "./response.json" assert { type: "json" };
 import mysql from "mysql2";
-import express from "express";
+import express, { request } from "express";
 import bodyParser from "body-parser";
 import e from "express";
 // import RegisterException from "./exceptions/RegisterException.mjs";
@@ -182,7 +182,7 @@ app.get("/commit", jsonParser, async (req, res) => {
   }
 });
 
-// Getting a route given userID
+// Getting a route given user ID
 app.get("/route/user_id=:user_id", jsonParser, async (req, res) => {
   try {
     if (req.params.user_id != null) {
@@ -211,6 +211,7 @@ app.get("/route/user_id=:user_id", jsonParser, async (req, res) => {
   }
 });
 
+// Deleting Route given map ID and route ID
 app.delete("/route/map_id=:map_id/route_id=:route_id", jsonParser, async (req, res) => {
   try{
     console.log("Deleting Route from User")
@@ -231,7 +232,32 @@ app.delete("/route/map_id=:map_id/route_id=:route_id", jsonParser, async (req, r
   }
 })
 
-// Getting a map givenn userid
+// Update Route given a user ID and route ID
+app.put("/route/map_id=:map_id/route_id=:route_id", jsonParser, async (req,res) => {
+  try{
+    if (req.params.map_id != null){ // shouldn't be neccessary
+      console.log(`Updating Route ${req.params.map_id}`)
+      // Note: There is a seperate endpoint for getting location_id from alias but we are nesting SQL Queries for assignment sake
+      con.query(
+        `UPDATE route
+        SET origin = (SELECT location_id FROM location WHERE alias = ?),
+        destination = (SELECT location_id FROM location WHERE alias = ?),
+        type = ?
+        WHERE map_id = ? AND route_id = ?`,
+        [req.body.origin, req.body.destination, req.body.travel_mode, req.params.map_id, req.params.route_id],
+        function (err, results) {
+          if (err) throw err;
+          console.log(results);
+          return res.status(200).json(results);
+        }
+      );
+    }
+  }catch(err){
+      
+  }
+})
+
+// Getting a map ID given user ID
 app.get("/get-user-mapID/user_id=:user_id", jsonParser, async (req, res) => {
   try {
     if (req.params.user_id != null) {
@@ -257,6 +283,7 @@ app.get("/get-user-mapID/user_id=:user_id", jsonParser, async (req, res) => {
   }
 });
 
+// Get destination Alias for a given Location ID
 app.get("/get-location-id/:locationAlias", jsonParser, async (req, res) => {
   try {
     console.log(req.params.locationAlias);
