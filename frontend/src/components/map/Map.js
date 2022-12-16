@@ -4,14 +4,7 @@ import { useState, useEffect, useRef } from "react";
 //   GoogleMapProvider,
 //   userGoogleMap,
 // } from "@ubilabs/google-maps-react-hooks";
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Flex,
-  Text,
-  Select,
-} from "@chakra-ui/react";
+import { Box, Button, ButtonGroup, Flex, Text, Select } from "@chakra-ui/react";
 import {
   GoogleMap,
   Marker,
@@ -29,25 +22,99 @@ import { useNavigate } from "react-router-dom";
 const center = { lat: 33.79, lng: -117.85 };
 
 const Map = (props) => {
-  // const [ libraries ] = useState(['places']);
-
-  // delete refs later
-  const originRef = useRef();
-  const destiantionRef = useRef();
-
   const [origin, setOrigin] = useState();
   const [destination, setDestination] = useState();
   const [mode, setMode] = useState();
-
-  const [originReview, setOriginReview] = useState();
-  const [destinationReview, setDestinationReview] = useState();
+  const [loading, setLoading] = useState(true);
+  const [originReview, setOriginReview] = useState([]);
+  const [destinationReview, setDestinationReview] = useState([]);
 
   const [map, setMap] = useState(null);
   const [directionsResponse, setDirectionsResponse] = useState(null);
-  const [distance, setDistance] = useState("");
-  const [duration, setDuration] = useState("");
+  // const [distance, setDistance] = useState("");
+  // const [duration, setDuration] = useState("");
   // const [calculated, setCalculated] = useState(false);
   // const [mapContainer, setMapContainer] = useState(null);
+
+  useEffect(() => {
+    setLoading(false);
+  }, []);
+
+  const changeOrigin = async (e) => {
+    setOrigin(e.target.value);
+    let origin_id;
+    try {
+      // Exchange Location Name for Location ID
+      const response1 = await fetch(
+        `/location/location_alias=${e.target.value}`,
+        {
+          method: "GET",
+          mode: "cors",
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+          },
+        }
+      );
+      const data1 = await response1.json();
+      origin_id = data1.location_id;
+      console.log(origin_id);
+      // Use Location ID to get Reviews
+      const response2 = await fetch(
+        `/location/reviews/location_id=${origin_id}`,
+        {
+          method: "GET",
+          mode: "cors",
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+          },
+        }
+      );
+      const data2 = await response2.json();
+      setOriginReview(data2.reviews);
+      console.log(originReview);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const changeDestination = async (e) => {
+    setDestination(e.target.value);
+    const newDest = e.target.value;
+    let destination_id;
+    try {
+      // Exchange Location Name for Location ID
+      const response1 = await fetch(`/location/location_alias=${newDest}`, {
+        method: "GET",
+        mode: "cors",
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+        },
+      });
+      const data1 = await response1.json();
+      destination_id = data1.location_id;
+      console.log(destination_id);
+      // Use Location ID to get Reviews
+      const response2 = await fetch(
+        `/location/reviews/location_id=${destination_id}`,
+        {
+          method: "GET",
+          mode: "cors",
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+          },
+        }
+      );
+      const data2 = await response2.json();
+      setDestinationReview(data2.reviews);
+      console.log(destinationReview);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    console.log(destinationReview);
+  }, [destinationReview]);
 
   const mapOptions = {
     zoom: 15,
@@ -56,25 +123,23 @@ const Map = (props) => {
       lng: -117.85,
     },
   };
-  
 
-
-  async function commit(e){
+  async function commit(e) {
     e.preventDefault();
-    if (props.userID == null){
-      throw "Cannot Commit Route: No User Logged In"
+    if (props.userID == null) {
+      throw "Cannot Commit Route: No User Logged In";
     }
-    const commitChanges = await fetch("/commit")
+    await fetch("/commit")
       .then((response) => response.json())
       .catch((error) => {
         console.log(error);
       });
   }
 
-  async function undo(e){
+  async function undo(e) {
     e.preventDefault();
-    if (props.userID == null){
-      throw "Cannot Commit Route: No User Logged In"
+    if (props.userID == null) {
+      throw "Cannot Commit Route: No User Logged In";
     }
     const commitChanges = await fetch("/rollback")
       .then((response) => response.json())
@@ -83,15 +148,15 @@ const Map = (props) => {
       });
   }
 
-  async function ExportCSV(e){
+  async function ExportCSV(e) {
     e.preventDefault();
-    let navigate = useNavigate(); 
+    let navigate = useNavigate();
     console.log("export csv button clicked");
 
-    const routeChange = () =>{ 
-      let path = `newPath`; 
+    const routeChange = () => {
+      let path = `newPath`;
       navigate(path);
-    }
+    };
     navigate("https://youtube.com");
 
     // const exportCSV = await fetch("/export")
@@ -101,10 +166,10 @@ const Map = (props) => {
     //   });
   }
 
-  async function saveRoute (e) {
+  async function saveRoute(e) {
     e.preventDefault();
     try {
-      if (props.userID == null){
+      if (props.userID == null) {
         throw "Cannot Save Route: No Logged In User";
       }
 
@@ -118,7 +183,7 @@ const Map = (props) => {
         .catch((error) => {
           console.log(error);
         });
-  
+
       await fetch("/get-location-id/" + destination)
         .then((response) => response.json())
         .then((responseJson) => {
@@ -129,54 +194,53 @@ const Map = (props) => {
         });
 
       await fetch(`/get-user-mapID/user_id=${props.userID}`, {
-          method: "GET",
-          mode: "cors",
-          headers: {
-            "Content-type": "application/json; charset=UTF-8",
-          }
-        })
+        method: "GET",
+        mode: "cors",
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+        },
+      })
         .then((res) => res.json())
         .then((data) => {
-          console.log("MAPID is "+ data.map_id);
+          console.log("MAPID is " + data.map_id);
           routeObj.map_id = data.map_id;
         })
         .catch((error) => {
           console.log("ERROR IN FETCHING MAPID FROM USERID: " + error);
         });
-  
-        console.log(routeObj);
-        
-      routeObj.type = mode;
-  
-      console.log(routeObj);
-        fetch("/route/", {
-          method: "POST",
-          mode: "cors",
-          body: JSON.stringify(routeObj),
-          headers: {
-            "Content-type": "application/json; charset=UTF-8",
-          },
-        })
-          .then((res) => {
-            console.log(res.status);
-            res.json();
-          })
-          .then((data) => {
-            console.log(data);
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-    }catch (err) {
-      console.log(err);
 
+      console.log(routeObj);
+
+      routeObj.type = mode;
+
+      console.log(routeObj);
+      fetch("/route/", {
+        method: "POST",
+        mode: "cors",
+        body: JSON.stringify(routeObj),
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+        },
+      })
+        .then((res) => {
+          console.log(res.status);
+          res.json();
+        })
+        .then((data) => {
+          console.log(data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } catch (err) {
+      console.log(err);
     }
   }
 
   async function calculateRoute() {
     // dont forget to add if route is calculated, create button to save route (just set "calculated" to true)
-    if (origin == null || destination == null || mode == null){
-      throw "Origin or Destination is null. Please Try Again."
+    if (origin == null || destination == null || mode == null) {
+      throw "Origin or Destination is null. Please Try Again.";
     }
     console.log("Origin: ", origin);
     console.log("Destination: ", destination);
@@ -187,30 +251,28 @@ const Map = (props) => {
     await fetch("/get-location-address/" + origin)
       .then((response) => response.json())
       .then((responseJson) => {
-
         originAddr = responseJson.address[0];
       })
       .catch((error) => {
         console.log(error);
       });
 
-      // get destination address through api
-      await fetch("/get-location-address/" + destination)
+    // get destination address through api
+    await fetch("/get-location-address/" + destination)
       .then((response) => response.json())
       .then((responseJson) => {
-
         destinationAddr = responseJson.address[0];
       })
       .catch((error) => {
         console.log(error);
       });
-    
+
     console.log(originAddr.address);
     console.log(destinationAddr.address);
 
-    if (origin === "" || destination === "") {
-      return;
-    }
+    // if (origin === "" || destination === "") {
+    //   return;
+    // }
 
     // Google API direction service request
     // eslint-disable-next-line no-undef
@@ -224,21 +286,15 @@ const Map = (props) => {
       provideRouteAlternatives: true,
     });
     setDirectionsResponse(results);
+  }
 
-    
-    setOriginReview("test1Review");
-    setDestinationReview("test2Review");
-    
-    
-  }
-  
-  function clearRoute() {
-    setDirectionsResponse(null);
-    setDistance("");
-    setDuration("");
-    originRef.current.value = "";
-    destiantionRef.current.value = "";
-  }
+  // function clearRoute() {
+  //   setDirectionsResponse(null);
+  //   setDistance("");
+  //   setDuration("");
+  //   originRef.current.value = "";
+  //   destiantionRef.current.value = "";
+  // }
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
@@ -271,9 +327,15 @@ const Map = (props) => {
 
       <Box className="inputBox">
         <Flex className="form">
-          {/* Input for origin */}
+          {/* DROPDOWN for Origin */}
           <Box>
-            <Select className="dropdown" id="originDropdown" value = {origin} onChange={(e) => setOrigin(e.target.value)} placeholder="Select Origin">
+            <Select
+              className="dropdown"
+              id="originDropdown"
+              value={origin}
+              onChange={(e) => changeOrigin(e)}
+              placeholder="Select Origin"
+            >
               {props.createLocationDropdown()}
             </Select>
           </Box>
@@ -281,22 +343,35 @@ const Map = (props) => {
               <Input type="text" placeholder="Origin" ref={originRef} />
             </Autocomplete> */}
 
-          {/* Input for Destination */}
+          {/* DROPDOWN for Destination */}
           <Box>
-          <Select className="dropdown" id="destinationDropdown" value = {destination} onChange={(e) => setDestination(e.target.value)} placeholder="Select Destination">
+            <Select
+              className="dropdown"
+              id="destinationDropdown"
+              value={destination}
+              onChange={(e) => changeDestination(e)}
+              placeholder="Select Destination"
+            >
               {props.createLocationDropdown()}
             </Select>
           </Box>
 
-
           {/* DROPDOWN MODES (Driving, Transit) */}
           <Box>
-          <Select className="dropdown" id="modeDropdown" value = {mode} onChange={(e) => {setMode(e.target.value); console.log(mode)}} placeholder="Select Mode">
+            <Select
+              className="dropdown"
+              id="modeDropdown"
+              value={mode}
+              onChange={(e) => {
+                setMode(e.target.value);
+                console.log(mode);
+              }}
+              placeholder="Select Mode"
+            >
               {props.createModesDropdown()}
             </Select>
           </Box>
 
-          
           {/* <Autocomplete>
               <Input
                 type="text"
@@ -315,26 +390,18 @@ const Map = (props) => {
               Calculate Route
             </Button>
           </ButtonGroup>
-          
+
           {/* SAVE ROUTE BUTTON */}
           <ButtonGroup>
-            <Button
-              type="submit"
-              className="submitButton"
-              onClick={saveRoute}
-            >
-              Save Route 
+            <Button type="submit" className="submitButton" onClick={saveRoute}>
+              Save Route
             </Button>
           </ButtonGroup>
-          
+
           {/* COMMIT BUTTON */}
           <ButtonGroup>
-            <Button
-              type="submit"
-              className="submitButton"
-              onClick={commit}
-            >
-              Commit 
+            <Button type="submit" className="submitButton" onClick={commit}>
+              Commit
             </Button>
             {/* <IconButton
               aria-label="center back"
@@ -345,11 +412,7 @@ const Map = (props) => {
 
           {/* UNDO BUTTON */}
           <ButtonGroup>
-            <Button
-              type="submit"
-              className="submitButton"
-              onClick={undo}
-            >
+            <Button type="submit" className="submitButton" onClick={undo}>
               Undo
             </Button>
             {/* <IconButton
@@ -358,7 +421,6 @@ const Map = (props) => {
               onClick={clearRoute}
             /> */}
           </ButtonGroup>
-
         </Flex>
 
         {/* Displaying output (Distance and Duration) */}
@@ -371,8 +433,27 @@ const Map = (props) => {
           </Box>
         </Flex> */}
 
-        <h1>{originReview}</h1>
-        <Button><a href="http://localhost:5001/export">Export to CSV </a> </Button>
+        <Button>
+          <a href="http://localhost:5001/export">Export to CSV </a>{" "}
+        </Button>
+        <Flex className="reviewBox" direction='column'>
+          <Box flex='1'>
+            <Box>Reviews for Origin</Box>
+            <ol>
+              {originReview.map((element, index) => {
+                  return <li>{element.review}</li>;
+                })}
+            </ol>
+          </Box>
+          <Box flex='1'>
+            <Box>Reviews for Destination</Box>
+            <ol>
+            {destinationReview.map((element, index) => {
+                return <li>{element.review}</li>;
+              })}
+            </ol>
+          </Box>
+        </Flex>
       </Box>
     </Flex>
   ) : (

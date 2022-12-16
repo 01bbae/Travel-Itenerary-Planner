@@ -4,9 +4,9 @@ import "./RouteSaved.css"
 const RouteSaved = (props) => {
   const [routes, setRoutes] = useState([]);
   const [edit, setEdit] = useState(-1);
-  const [origin, setOrigin] = useState("");
-  const [destination, setDestination] = useState("");
-  const [travelMode, setTravelMode] = useState("");
+  const [origin, setOrigin] = useState(null);
+  const [destination, setDestination] = useState(null);
+  const [travelMode, setTravelMode] = useState(null);
   // const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {

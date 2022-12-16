@@ -78,7 +78,7 @@ const createTables = () => {
     review_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     location_id INT NOT NULL,
-    review VARCHAR(100),
+    review VARCHAR(500),
     FOREIGN KEY (user_id) REFERENCES user(user_id),
     FOREIGN KEY (location_id) REFERENCES location(location_id)
   )`);
@@ -118,12 +118,12 @@ function insertBusinessInDatabase(){
 
   console.log("Inserted locations into database");
 }
-// ONLY RUN ONCE TO INSERT LOCATIONS
+// ONLY RUN ONCE TO INSERT PLACEHOLDER LOCATIONS
 // insertBusinessInDatabase();
 
 /* -------------------------API INTEGRATION----------------------------------------------- */
 
-// Creating a route for user_id
+// Creating a route for map_id
 app.post("/route/", jsonParser, async (req, res) => {
   try {
     const origin = req.body.origin;
@@ -158,6 +158,7 @@ app.post("/route/", jsonParser, async (req, res) => {
   }
 });
 
+// Rollback Changes
 app.get("/rollback", jsonParser, async (req, res) => {
   try {
     con.rollback();
@@ -169,6 +170,7 @@ app.get("/rollback", jsonParser, async (req, res) => {
   }
 });
 
+// Commit Changes
 app.get("/commit", jsonParser, async (req, res) => {
   try {
     con.commit();
@@ -180,7 +182,7 @@ app.get("/commit", jsonParser, async (req, res) => {
   }
 });
 
-// Getting a route given user ID
+// Get a route given user ID
 app.get("/route/user_id=:user_id", jsonParser, async (req, res) => {
   try {
     if (req.params.user_id != null) {
@@ -209,7 +211,7 @@ app.get("/route/user_id=:user_id", jsonParser, async (req, res) => {
   }
 });
 
-// Deleting Route given map ID and route ID
+// Deleting route given map ID and route ID
 app.delete("/route/map_id=:map_id/route_id=:route_id", jsonParser, async (req, res) => {
   try{
     console.log("Deleting Route from User")
@@ -230,140 +232,133 @@ app.delete("/route/map_id=:map_id/route_id=:route_id", jsonParser, async (req, r
   }
 })
 
-// Update Route given a user ID and route ID
+// Update route given a user ID and route ID
 app.put("/route/map_id=:map_id/route_id=:route_id", jsonParser, async (req,res) => {
   try{
-    if (req.params.map_id != null){ // shouldn't be neccessary
-      console.log(`Updating Route ${req.params.map_id}`)
-      // Note: There is a seperate endpoint for getting location_id from alias but we are nesting SQL Queries for assignment sake
-      con.query(
-        `UPDATE route
-        SET origin = (SELECT location_id FROM location WHERE alias = ?),
-        destination = (SELECT location_id FROM location WHERE alias = ?),
-        type = ?
-        WHERE map_id = ? AND route_id = ?`,
-        [req.body.origin, req.body.destination, req.body.travel_mode, req.params.map_id, req.params.route_id],
-        function (err, results) {
-          if (err) throw err;
-          console.log(results);
-          return res.status(200).json(results);
-        }
-      );
-    }
+    if (req.params.map_id == null){
+      throw "Map ID is null"
+    } // shouldn't be neccessary
+    console.log(`Updating Route ${req.params.map_id}`)
+    // Note: There is a seperate endpoint for getting location_id from alias but we are nesting SQL Queries for assignment sake
+    con.query(
+      `UPDATE route
+      SET origin = (SELECT location_id FROM location WHERE alias = ?),
+      destination = (SELECT location_id FROM location WHERE alias = ?),
+      type = ?
+      WHERE map_id = ? AND route_id = ?`,
+      [req.body.origin, req.body.destination, req.body.travel_mode, req.params.map_id, req.params.route_id],
+      function (err, results) {
+        if (err) throw err;
+        console.log(results);
+        return res.status(200).json(results);
+      }
+    );
   }catch(err){
-      
+    console.log("Error in /route/map_id=:map_id/route_id=:route_id: " + err);
+    return res.status(500);
   }
 })
 
-// Getting a map ID given user ID
+// Get a map ID given user ID
 app.get("/get-user-mapID/user_id=:user_id", jsonParser, async (req, res) => {
   try {
     if (req.params.user_id != null) {
-      console.log("Getting MAP ID OF USER");
-      con.query(
-        `SELECT map_id
-        FROM map
-        WHERE user_id = ?;`,
-        req.params.user_id,
-        function (err, results) {
-          if (err) throw err;
-          console.log(results);
-          return res.status(200).json(results[0]);
-        }
-      );
-    }else{
-      throw "NULL user_id"
+      throw "User ID is null"
     }
+    con.query(
+      `SELECT map_id
+      FROM map
+      WHERE user_id = ?;`,
+      req.params.user_id,
+      function (err, results) {
+        if (err) throw err;
+        console.log(results);
+        return res.status(200).json(results[0]);
+      }
+    );
   } catch (err) {
-    console.log("Error with getting the route");
-    console.log(err);
+    console.log("Error in /get-user-mapID/user_id=:user_id" + err);
+    return res.status(500);
+  }
+});
+
+// Get location ID for a given location alias
+app.get("/location/location_alias=:location_alias", jsonParser, async (req, res) => {
+  try {
+    console.log(req.params.location_alias);
+    con.query(
+      `SELECT location_id FROM location
+                WHERE alias = ?;`,
+      req.params.location_alias,
+      function (err, results) {
+        if (err) throw err;
+        console.log(results[0]);
+        return res.status(200).json(results[0]);
+      }
+    );
+  } catch (err) {
+    console.log("Error in endpoint: /location/location_id=:location_alias: " + err);
     return res.status(500).json(err);
   }
 });
 
-// Get destination Alias for a given Location ID
-app.get("/get-location-id/:locationAlias", jsonParser, async (req, res) => {
-  try {
-    console.log(req.params.locationAlias);
-    con.query(
-      `SELECT location_id FROM location
-                WHERE alias = ?;`,
-      req.params.locationAlias,
-      function (err, results) {
-        if (err) {
-          console.log(err);
-          res.sendStatus(500);
-          return;
-        }
-        res.status(200).send({
-          location_id: results,
-        });
-      }
-    );
-
-    // res.status(200).json("Success");
-  } catch (err) {
-    res.status(500).json(err);
-    console.log("Error with getting the route");
-  }
-});
-
-app.get(
-  "/get-location-address/:locationAlias",
+// Get location address from location alias
+app.get("/location/location_alias=:location_alias",
   jsonParser,
   async (req, res) => {
     try {
-      console.log(req.params.id);
+      console.log(req.params.location_alias);
       con.query(
         `SELECT address FROM location
                 WHERE alias = ?;`,
-        req.params.locationAlias,
+        req.params.location_alias,
         function (err, results) {
           if (err) throw err;
           console.log(results);
-          res.status(200).send({
+          return res.status(200).json({
             address: results,
           });
         }
       );
     } catch (err) {
-      res.status(500).json(err);
-      console.log("Error with getting the route");
+      console.log("Error in /location/location_alias=:location_alias: " + err);
+      return res.status(500).json(err);
     }
   }
 );
 
-// // Delete a route given id in parameter
-// app.delete("/delete-route/:id", jsonParser, async (req, res) => {
-//   try {
-//     console.log(req.params.id);
-//     con.query(
-//       `DELETE FROM route
-//                 WHERE route_id = ?;`,
-//       req.params.id,
-//       function (err, results) {
-//         if (err) throw err;
-//         console.log(results);
-//       }
-//     );
+app.get("/location/reviews/location_id=:location_id", jsonParser, async (req, res) => {
+  try {
+    if (req.params.location_id == null){
+      throw "location ID is null";
+    }
+    console.log("location_id in server " + req.params.location_id);
+    con.query(
+      `SELECT review_id, review FROM review
+              WHERE location_id = ?;`,
+      req.params.location_id,
+      (err, results) => {
+        if (err) throw err;
+        console.log(results);
+        return res.status(200).json({reviews: results});
+      }
+    );
+  } catch (err) {
+    console.log("Error in /location/reviews/location_id=:location_id: "+ err);
+    return res.status(500);
+  }
+})
 
-//     res.status(500).json("Success");
-//   } catch (err) {
-//     res.status(500).json(err);
-//     console.log("Error with deleting the route");
-//   }
-// });
+
 
 // Register new Account
 app.post("/register", jsonParser, (req, res) => {
   try {
     const username = req.body.username;
     const password = req.body.password;
-
     if (username == null || password == null) {
       throw "Unsuccessful post from frontend: value(s) null.";
     }
-
     con.query(
       `
       CALL addUserAndMap(${mysql.escape(username)}, ${mysql.escape(password)})`,
@@ -379,16 +374,14 @@ app.post("/register", jsonParser, (req, res) => {
       }
     );
   } catch (err) {
-    console.log("ERROR");
-    console.log(err);
-    return res.status(300).json({ success: false, exists: false });
+    console.log("Error in /register: " + err);
+    return res.status(500).json({ success: false, exists: false });
   }
 });
 
 // Login Functionality
 app.post("/login", jsonParser, async (req, res) => {
   try {
-    console.log(req.body);
     const username = req.body.username;
     const password = req.body.password;
     let login = false;
@@ -416,19 +409,13 @@ app.post("/login", jsonParser, async (req, res) => {
             .json({ login: true, userID: result[0].user_id });
         } else {
           console.log("login failed");
-          return res.status(400).json({ login: false });
+          return res.status(300).json({ login: false });
         }
       }
     );
-    // console.log(login);
-    // if (login) {
-    //   return res.status(200).json({ login: true });
-    // } else {
-    //   return res.status(400).json({ login: false });
-    // }
   } catch (err) {
-    console.log("ERROR: unable to log in");
-    console.log(err);
+    console.log("ERROR in /login");
+    return res.status(500).json({ login: false });
   }
 });
 

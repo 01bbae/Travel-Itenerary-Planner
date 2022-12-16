@@ -42,3 +42,9 @@
 .dropdown{
     width: inherit;
 }
+
+.reviewBox{
+    height:65vh;
+    font-size: .8rem;
+    overflow: auto;
+}
