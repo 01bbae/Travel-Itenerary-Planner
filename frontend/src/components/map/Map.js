@@ -199,24 +199,26 @@ const Map = (props) => {
 
       let routeObj = {};
 
-      await fetch("/get-location-id/" + origin)
+      await fetch("/location/id/location_alias=" + origin)
         .then((response) => response.json())
         .then((responseJson) => {
-          routeObj.origin = responseJson.location_id[0].location_id;
+          routeObj.origin = responseJson.location_id;
         })
         .catch((error) => {
           console.log(error);
         });
 
-      await fetch("/get-location-id/" + destination)
+      await fetch("/location/id/location_alias=" + destination)
         .then((response) => response.json())
         .then((responseJson) => {
-          routeObj.destination = responseJson.location_id[0].location_id;
+          routeObj.destination = responseJson.location_id;
         })
         .catch((error) => {
           console.log(error);
         });
 
+      
+      console.log(props.userID);
       await fetch(`/get-user-mapID/user_id=${props.userID}`, {
         method: "GET",
         mode: "cors",
@@ -230,7 +232,7 @@ const Map = (props) => {
           routeObj.map_id = data.map_id;
         })
         .catch((error) => {
-          console.log("ERROR IN FETCHING MAPID FROM USERID: " + error);
+          console.error("ERROR IN FETCHING MAPID FROM USERID: " + error);
         });
 
       console.log(routeObj);
@@ -268,42 +270,42 @@ const Map = (props) => {
     }
     console.log("Origin: ", origin);
     console.log("Destination: ", destination);
-    var originAddr;
-    var destinationAddr;
+    let originAddr;
+    let destinationAddr;
 
     // get origin address through api
-    await fetch("/get-location-address/" + origin)
+    await fetch("/location/address/location_alias=" + origin)
       .then((response) => response.json())
       .then((responseJson) => {
-        originAddr = responseJson.address[0];
+        originAddr = responseJson.address;
       })
       .catch((error) => {
         console.log(error);
       });
 
     // get destination address through api
-    await fetch("/get-location-address/" + destination)
+    await fetch("/location/address/location_alias=" + destination)
       .then((response) => response.json())
       .then((responseJson) => {
-        destinationAddr = responseJson.address[0];
+        destinationAddr = responseJson.address;
       })
       .catch((error) => {
         console.log(error);
       });
 
-    console.log(originAddr.address);
-    console.log(destinationAddr.address);
-
-    // if (origin === "" || destination === "") {
-    //   return;
-    // }
+    console.log(originAddr);
+    console.log(destinationAddr);
+    
+    if (originAddr == null || destinationAddr == null){
+      throw "Addresses are null";
+    }
 
     // Google API direction service request
     // eslint-disable-next-line no-undef
     const directionsService = new google.maps.DirectionsService();
-    var results = await directionsService.route({
-      origin: originAddr.address,
-      destination: destinationAddr.address,
+    const results = await directionsService.route({
+      origin: originAddr,
+      destination: destinationAddr,
       // eslint-disable-next-line no-undef
       travelMode: mode,
       // waypoints: [{ stopover: true, location: { placeId: "ChIJRVj1dgPP20YRBWB4A_sUx_Q" } }],
@@ -388,7 +390,6 @@ const Map = (props) => {
               value={mode}
               onChange={(e) => {
                 setMode(e.target.value);
-                console.log(mode);
               }}
               placeholder="Select Mode"
             >

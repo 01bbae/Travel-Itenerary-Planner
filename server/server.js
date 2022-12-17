@@ -2,24 +2,12 @@ import dotenv from "dotenv";
 dotenv.config();
 import YelpData from "./response.json" assert { type: "json" };
 import mysql from "mysql2";
-import express, { request } from "express";
+import express from "express";
 import bodyParser from "body-parser";
-import e from "express";
-// import RegisterException from "./exceptions/RegisterException.mjs";
-// const data_exporter = require('json2csv').Parser;
+import { AsyncParser } from "@json2csv/node"
 
 const app = express();
 var jsonParser = bodyParser.json();
-
-app.get("/query", (req, res) => {
-  res.json({
-    // test data
-    "01": "United States",
-    "02": "United Kingdom",
-    "03": "Aruba",
-    "04": "United Kingdom",
-  });
-});
 
 var con = mysql.createConnection({
   host: "localhost",
@@ -87,8 +75,6 @@ const createTables = () => {
 
 createTables();
 
-
-// PROCEDURE CREATED IN DATAGRIP
 const createUserAndMapProcedure = () => {
   con.query(`
   CREATE Procedure IF NOT EXISTS addUserAndMap(IN username VARCHAR(20), IN password VARCHAR(20))
@@ -262,7 +248,7 @@ app.put("/route/map_id=:map_id/route_id=:route_id", jsonParser, async (req,res) 
 // Get a map ID given user ID
 app.get("/get-user-mapID/user_id=:user_id", jsonParser, async (req, res) => {
   try {
-    if (req.params.user_id != null) {
+    if (req.params.user_id == null) {
       throw "User ID is null"
     }
     con.query(
@@ -277,7 +263,7 @@ app.get("/get-user-mapID/user_id=:user_id", jsonParser, async (req, res) => {
       }
     );
   } catch (err) {
-    console.log("Error in /get-user-mapID/user_id=:user_id" + err);
+    console.log("Error in /get-user-mapID/user_id=:user_id: " + err);
     return res.status(500);
   }
 });
@@ -314,7 +300,6 @@ app.get("/location/name/location_alias=:location_alias", jsonParser, async (req,
         req.params.location_alias,
         function (err, results) {
           if (err) throw err;
-          console.log("location name " + results[0]);
           return res.status(200).json(results[0]);
         }
       );
@@ -323,6 +308,29 @@ app.get("/location/name/location_alias=:location_alias", jsonParser, async (req,
       return res.status(500).json(err);
     }
   }
+);
+
+// Get location address
+app.get("/location/address/location_alias=:location_alias", jsonParser, async (req, res) => {
+  try {
+    if (req.params.location_alias == null){
+      throw "location alias is null";
+    }
+    con.query(
+      `SELECT address FROM location
+              WHERE alias = ?;`,
+      req.params.location_alias,
+      function (err, results) {
+        if (err) throw err;
+        // console.log(req.params.location_alias + " address: " + results[0].address)
+        return res.status(200).json({address: results[0].address});
+      }
+    );
+  } catch (err) {
+    console.log("Error in /location/location_alias=:location_alias: " + err);
+    return res.status(500).json(err);
+  }
+}
 );
 
 // Get reviews from location ID
@@ -338,7 +346,6 @@ app.get("/location/reviews/location_id=:location_id", jsonParser, async (req, re
       req.params.location_id,
       (err, results) => {
         if (err) throw err;
-        console.log(results);
         return res.status(200).json({reviews: results});
       }
     );
@@ -419,22 +426,22 @@ app.post("/login", jsonParser, async (req, res) => {
 });
 
 // Export functionality
-app.get('/export', function(request, response, next){
-  con.query('SELECT * FROM route', function(error, data){
-
-    var mysql_data = JSON.parse(JSON.stringify(data));
+app.get('/export', async (request, response) => {
+  con.query('SELECT * FROM route', 
+  async (error, data) => {
+    const mysql_data = JSON.parse(JSON.stringify(data));
     //convert JSON to CSV Data
-    var file_header = ['route_id', 'origin', 'destination', 'type'];
+    const file_header = ['route_id', 'origin', 'destination', 'type'];
 
-    var json_data = new data_exporter({file_header});
+    const parser = new AsyncParser(/*{file_header}*/);
 
-    var csv_data = json_data.parse(mysql_data);
+    const csv = await parser.parse(mysql_data).promise();
 
     response.setHeader("Content-Type", "text/csv");
 
     response.setHeader("Content-Disposition", "attachment; filename=routes.csv");
 
-    response.status(200).end(csv_data);
+    response.status(200).end(csv);
 
   });
 
