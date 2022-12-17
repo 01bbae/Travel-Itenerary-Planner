@@ -19,12 +19,12 @@ We wanted to create a platform that would allow people to create their own trave
 2. After creating an Google Maps Platform account, create a new project, and enable the Directions, Maps Javascript, and Places API
 3. Head to the Travel-Itinerary-Planner/frontend directory and create a .env file. In this file, add in your API credentials in this format: REACT_APP_GOOGLE_MAPS_API_KEY={INSERT API KEY}
 4. In the Travel-Itinerary-Planner/server directory, create a .env file. In this file, add in your mysql password in this format: MYSQL_PASSWORD={INSERT PASSWORD}
-5. In both the frontend and server directory, type in "npm install".
+5. In both the frontend and server directory, type in "npm ci".
 
 ### How to run the web application:
 
 1. Change into the server directory and run npm start.
-2. Change into the frontend directory and run npm start.
+2. Change into the frontend directory and run npm start (or npm run dev for nodemon).
 
 ### References:
 
